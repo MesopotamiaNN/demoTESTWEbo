@@ -1,25 +1,15 @@
 {
-  "name": "Elyctro",
-  "short_name": "Elyctro",
-  "description": "تطبيق محادثات عائلي يعمل دون إنترنت",
+  "name": "جامعة الناجي - الحضور",
+  "short_name": "الحضور",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0e1621",
-  "theme_color": "#17212b",
-  "dir": "rtl",
+  "orientation": "landscape",
+  "background_color": "#0b1120",
+  "theme_color": "#3b82f6",
   "lang": "ar",
+  "dir": "rtl",
   "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968841.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968841.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

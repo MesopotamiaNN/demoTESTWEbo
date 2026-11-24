@@ -2,670 +2,704 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Elyctro | Smart Reconnect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامعة الناجي الأهلية | Al-Naji University</title>
     
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#17212b">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
+    <!-- الخطوط: Cairo للعربية، Noto Kufi للكوردية، Outfit للإنكليزية -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Noto+Kufi+Arabic:wght@300;400;700&family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
+    <!-- مكتبة الخرائط Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <style>
-        /* نفس التصميم السابق (تم اختصاره هنا للحفاظ على المساحة، الكود يعمل بكفاءة) */
-        :root { --bg-main: #0e1621; --bg-header: rgba(23, 33, 43, 0.98); --bg-panel: #17212b; --bg-hover: #202b36; --accent: #3390ec; --text-main: #ffffff; --text-secondary: #7d8b99; --msg-mine: #2b5278; --msg-their: #182533; --border: #101921; --danger: #e53935; --success: #4caf50; --call-bg: rgba(14, 22, 33, 0.95); }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { background-color: var(--bg-main); color: var(--text-main); height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
-        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--bg-main); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 1; }
-        .screen.hidden { transform: translateX(-100%); opacity: 0; pointer-events: none; z-index: 0; }
-        .screen.slide-in { transform: translateX(0); opacity: 1; z-index: 10; }
-        .header { background: var(--bg-header); backdrop-filter: blur(12px); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
-        .header-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .header-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
-        .header-icon:active { background: var(--bg-hover); color: var(--text-main); }
-        #setupScreen { justify-content: center; align-items: center; padding: 20px; background: linear-gradient(135deg, #0e1621 0%, #17212b 100%); }
-        .setup-card { width: 100%; max-width: 400px; text-align: center; background: rgba(255,255,255,0.02); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); }
-        .avatar-upload { width: 120px; height: 120px; border-radius: 50%; background: var(--bg-panel); margin: 0 auto 20px; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent); }
-        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .avatar-upload .material-symbols-rounded { font-size: 50px; color: var(--text-secondary); }
-        .camera-icon { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); padding: 8px; display: flex; justify-content: center; }
-        .camera-icon .material-symbols-rounded { font-size: 20px; color: white; }
-        .input-group { background: var(--bg-panel); border-radius: 12px; padding: 4px 16px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 20px; }
-        .input-group input { flex: 1; background: none; border: none; color: white; padding: 16px 10px; font-size: 16px; outline: none; }
-        .btn-primary { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent); color: white; font-size: 16px; font-weight: 700; cursor: pointer; }
-        .chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .chat-avatar { width: 54px; height: 54px; border-radius: 50%; background: var(--bg-panel); display: flex; align-items: center; justify-content: center; margin-left: 12px; overflow: hidden; }
-        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .chat-info { flex: 1; text-align: right; }
-        .chat-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        .chat-preview { font-size: 14px; color: var(--text-secondary); }
-        .fab { position: absolute; bottom: 24px; left: 24px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(51, 144, 236, 0.5); cursor: pointer; z-index: 50; border: none; color: white; }
-        #chatScreen { background-image: radial-gradient(circle, #192636 1.5px, transparent 1px); background-size: 25px 25px; }
-        .chat-screen-header { background: var(--bg-header); padding: 10px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); padding-top: max(10px, env(safe-area-inset-top)); }
-        .back-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 8px; border-radius: 50%; }
-        .chat-screen-header .chat-avatar { width: 42px; height: 42px; margin: 0; }
-        .chat-screen-header .chat-info { margin-left: auto; }
-        .chat-screen-header .chat-name { font-size: 16px; }
-        .chat-screen-header .chat-status { font-size: 13px; color: var(--text-secondary); transition: color 0.3s; }
-        .header-actions { display: flex; gap: 4px; }
-        .action-btn { background: none; border: none; color: var(--accent); padding: 8px; border-radius: 50%; cursor: pointer; }
-        .messages-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 6px; }
-        .message { max-width: 85%; padding: 8px 12px; border-radius: 12px; background: var(--msg-their); align-self: flex-start; font-size: 15px; position: relative; }
-        .message.mine { background: var(--msg-mine); align-self: flex-end; }
-        .message .meta { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px; float: left; margin-left: 8px; }
-        .message .meta .material-symbols-rounded { font-size: 15px; color: #7d8b99; }
-        .message .meta .material-symbols-rounded.read { color: #64b5f6; }
-        .msg-image { max-width: 100%; border-radius: 8px; margin-bottom: 4px; }
-        .composer-wrapper { background: var(--bg-header); border-top: 1px solid var(--border); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .composer { padding: 10px 12px; display: flex; align-items: flex-end; gap: 10px; }
-        .composer-input-wrapper { flex: 1; background: var(--bg-panel); border-radius: 24px; display: flex; align-items: center; padding: 0 12px; min-height: 48px; }
-        .composer .material-symbols-rounded { color: var(--text-secondary); font-size: 26px; cursor: pointer; }
-        .composer input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px 10px; font-size: 16px; outline: none; }
-        .send-btn { width: 48px; height: 48px; border-radius: 50%; background: var(--accent); border: none; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
-        .send-btn.recording { background: var(--danger); animation: pulse-red 1s infinite; }
-        .send-btn .material-symbols-rounded { color: white; font-size: 26px; }
-        #callOverlay { position: fixed; inset: 0; background: var(--call-bg); backdrop-filter: blur(15px); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateY(100%); transition: transform 0.3s; }
-        #callOverlay.active { transform: translateY(0); }
-        .call-avatar { width: 120px; height: 120px; border-radius: 50%; background: var(--bg-panel); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; overflow: hidden; }
-        .call-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .call-name { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
-        .call-status { font-size: 16px; color: var(--text-secondary); margin-bottom: 50px; }
-        .call-actions { display: flex; gap: 30px; }
-        .call-btn { width: 70px; height: 70px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
-        .call-btn.accept { background: var(--success); }
-        .call-btn.decline { background: var(--danger); }
-        .call-btn.mute { background: var(--bg-panel); width: 60px; height: 60px; align-self: center; }
-        .call-btn.mute.muted { background: var(--danger); }
-        .call-btn .material-symbols-rounded { font-size: 32px; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--bg-panel); width: 90%; max-width: 400px; border-radius: 24px; padding: 24px; text-align: center; }
-        .modal-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: white; font-size: 16px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .modal-btn.outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-        .qr-box { background: white; padding: 16px; border-radius: 16px; margin: 20px auto; display: none; width: fit-content; }
-        .qr-box img { width: 200px; height: 200px; }
-        #scannerVideo { width: 100%; border-radius: 12px; display: none; margin-top: 15px; background: #000; }
-        #settingsScreen { background: var(--bg-main); z-index: 20; }
-        .settings-profile { display: flex; flex-direction: column; align-items: center; padding: 30px 20px; border-bottom: 1px solid var(--border); }
-        .settings-profile .avatar-upload { width: 100px; height: 100px; margin-bottom: 15px; }
-        .settings-item { padding: 16px 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; color: var(--text-main); }
-        .context-menu { position: fixed; background: var(--bg-panel); border-radius: 16px; padding: 8px; z-index: 2000; display: none; border: 1px solid var(--border); }
-        .context-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-radius: 8px; font-size: 15px; }
-        .context-item.danger { color: var(--danger); }
-        .emoji-picker { position: absolute; bottom: 70px; left: 10px; background: var(--bg-panel); border-radius: 12px; padding: 10px; display: none; flex-wrap: wrap; width: 200px; gap: 5px; z-index: 200; border: 1px solid var(--border); }
-        .emoji-picker span { font-size: 24px; cursor: pointer; padding: 5px; }
+        /* ═══ المتغيرات والهوية البصرية ═══ */
+        :root {
+            --primary: #1e3a8a; 
+            --primary-light: #3b82f6; 
+            --accent: #8b5cf6;
+            --bg: #f0f4ff; 
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --glass-bg: rgba(255, 255, 255, 0.15); 
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --text: #1f2937; 
+            --text-light: #6b7280;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08); 
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --radius: 24px; 
+            --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --glass-bg: rgba(15, 23, 42, 0.5); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9; 
+            --text-light: #94a3b8;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4); 
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Cairo', 'Noto Kufi Arabic', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 30%, #f5f0ff 60%, #e0e7ff 100%);
+            background-size: 400% 400%; 
+            animation: gradientShift 15s ease infinite;
+            color: var(--text); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            transition: background 0.5s ease;
+        }
+
+        html[dir="ltr"] body { font-family: 'Outfit', 'Cairo', sans-serif; }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #1e1b4b 60%, #0f172a 100%);
+            background-size: 400% 400%;
+        }
+
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* الجزيئات */
+        .particles-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle { position: absolute; border-radius: 50%; background: rgba(59, 130, 246, 0.4); animation: floatParticle 15s infinite ease-in-out; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+        [data-theme="dark"] .particle { background: rgba(139, 92, 246, 0.3); box-shadow: 0 0 15px rgba(139,92,246,0.6); }
+        @keyframes floatParticle { 0%, 100% { transform: translateY(0) scale(1); opacity: 0.2; } 50% { transform: translateY(-150px) scale(1.5); opacity: 0.6; } 75% { transform: translateY(-60px) scale(0.8); opacity: 0.4; } }
+
+        .main-container { max-width: 1200px; width: 100%; margin: 0 auto; position: relative; z-index: 1; padding: 20px; }
+
+        /* ═══ شريط التنقل ═══ */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; background: var(--glass-bg); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 50px;
+            box-shadow: var(--shadow); margin-bottom: 20px; position: sticky; top: 20px; z-index: 100;
+            transition: var(--transition);
+        }
+        .navbar .logo { 
+            display: flex; align-items: center; gap: 12px; font-size: 1.4rem; font-weight: 900; color: var(--primary);
+            cursor: pointer; white-space: nowrap;
+        }
+        [data-theme="dark"] .navbar .logo { color: #fff; }
+        .navbar .logo i.fa-university { color: var(--accent); font-size: 1.6rem; }
+        
+        /* أيقونة القائمة للموبايل */
+        .mobile-menu-icon {
+            display: none; font-size: 1.2rem; color: var(--text-light); margin-right: 10px;
+            background: var(--card-bg); padding: 8px; border-radius: 50%; border: 1px solid var(--glass-border);
+        }
+        html[dir="ltr"] .mobile-menu-icon { margin-right: 0; margin-left: 10px; }
+
+        .nav-links { display: flex; gap: 15px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text); font-weight: 700; font-size: 0.95rem; transition: var(--transition); padding: 8px 15px; border-radius: 20px; }
+        .nav-links a:hover { color: var(--primary-light); background: rgba(59, 130, 246, 0.1); transform: translateY(-2px); }
+        
+        .portal-btn-nav { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white !important; padding: 10px 20px; border-radius: 50px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
+        .portal-btn-nav:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.6); }
+
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        
+        .lang-switch { display: flex; gap: 5px; background: var(--glass-bg); padding: 5px; border-radius: 50px; border: 1px solid var(--glass-border); }
+        .lang-btn { background: transparent; border: none; color: var(--text); font-family: inherit; font-weight: 700; font-size: 0.85rem; padding: 6px 12px; border-radius: 50px; cursor: pointer; transition: var(--transition); }
+        .lang-btn:hover, .lang-btn.active { background: var(--primary-light); color: white; box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4); }
+        
+        .icon-btn { background: var(--card-bg); border: 2px solid var(--primary-light); color: var(--primary); width: 42px; height: 42px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; }
+        .icon-btn:hover { transform: scale(1.1) rotate(5deg); background: var(--primary-light); color: white; }
+        [data-theme="dark"] .icon-btn { color: #fff; border-color: var(--accent); }
+
+        /* ═══ شريط الأخبار ═══ */
+        .ticker-wrap {
+            width: 100%; overflow: hidden; background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white; padding: 12px 0; border-radius: 15px; margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); white-space: nowrap; position: relative;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .ticker { display: inline-block; animation: ticker 35s linear infinite; font-weight: 700; font-size: 1rem; }
+        .ticker span { padding: 0 50px; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        html[dir="ltr"] .ticker { animation: tickerLtr 35s linear infinite; }
+        @keyframes tickerLtr { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        /* ═══ القسم الرئيسي ═══ */
+        .hero { 
+            text-align: center; padding: 100px 20px; position: relative; overflow: hidden;
+            background: var(--glass-bg); backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border); border-radius: var(--radius); 
+            box-shadow: var(--shadow); margin-bottom: 50px; 
+        }
+        .hero h1 { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .hero p { font-size: 1.4rem; color: var(--text-light); margin-bottom: 40px; font-weight: 600; letter-spacing: 2px; }
+        
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 10px; 
+            background: linear-gradient(135deg, var(--primary), var(--accent)); 
+            color: white; text-decoration: none; padding: 16px 40px; border-radius: 50px; 
+            font-size: 1.2rem; font-weight: 800; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); 
+            transition: var(--transition); border: 2px solid transparent;
+        }
+        .btn-primary:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px rgba(59, 130, 246, 0.6); border-color: rgba(255,255,255,0.3); }
+
+        /* ═══ العناوين ═══ */
+        .section-title { text-align: center; font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 70px 0 40px; }
+        [data-theme="dark"] .section-title { color: #fff; }
+        .section-title::after { content: ''; display: block; width: 100px; height: 5px; background: linear-gradient(90deg, var(--primary-light), var(--accent)); margin: 15px auto 0; border-radius: 5px; }
+
+        /* ═══ الإحصائيات ═══ */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 25px; }
+        .stat-card { 
+            background: var(--card-bg); border: 1px solid var(--glass-border); 
+            border-radius: var(--radius); padding: 35px 20px; text-align: center; 
+            box-shadow: var(--shadow); transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--primary-light), var(--accent)); opacity: 0; transition: var(--transition); }
+        .stat-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-icon { font-size: 3rem; color: var(--primary-light); margin-bottom: 15px; text-shadow: 0 5px 15px rgba(59,130,246,0.3); }
+        .stat-number { font-size: 2.8rem; font-weight: 900; color: var(--text); }
+        .stat-title { font-size: 1.1rem; font-weight: 700; color: var(--text-light); margin-top: 5px; }
+
+        /* ═══ البطاقات ═══ */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { 
+            background: var(--card-bg); border: 1px solid var(--glass-border); 
+            border-radius: var(--radius); padding: 35px; box-shadow: var(--shadow); 
+            transition: var(--transition); text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+        .card:hover { transform: translateY(-10px); box-shadow: var(--shadow-hover); border-color: var(--primary-light); }
+        
+        .icon-box {
+            width: 70px; height: 70px; border-radius: 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.15));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: var(--primary-light); margin-bottom: 25px;
+            transition: var(--transition); border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .card:hover .icon-box { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; transform: scale(1.1) rotate(5deg); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4); }
+        
+        .card h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; }
+        .card p { font-size: 1rem; color: var(--text-light); line-height: 1.8; flex: 1; }
+
+        /* ═══ المزايا ═══ */
+        .features-box { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); }
+        .features-box ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .features-box li { display: flex; align-items: flex-start; gap: 15px; font-size: 1.05rem; line-height: 1.8; color: var(--text); background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--glass-border); transition: var(--transition); }
+        .features-box li:hover { transform: translateX(-8px); border-color: var(--accent); box-shadow: var(--shadow); }
+        html[dir="ltr"] .features-box li:hover { transform: translateX(8px); }
+        .features-box li i { color: var(--accent); margin-top: 5px; font-size: 1.4rem; flex-shrink: 0; }
+
+        /* ═══ الخريطة ═══ */
+        .map-container-wrapper { background: var(--card-bg); padding: 10px; border-radius: var(--radius); border: 1px solid var(--glass-border); box-shadow: var(--shadow); margin-bottom: 50px; position: relative; z-index: 1; }
+        #map { height: 450px; width: 100%; border-radius: 18px; z-index: 1; }
+        [data-theme="dark"] #map { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+
+        /* ═══ الفوتر ═══ */
+        .footer { margin-top: 80px; padding: 60px 20px 20px; background: var(--card-bg); border-radius: var(--radius) var(--radius) 0 0; border-top: 2px solid var(--glass-border); backdrop-filter: blur(20px); }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
+        .footer h4 { font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; color: var(--primary); position: relative; padding-bottom: 10px; }
+        [data-theme="dark"] .footer h4 { color: #fff; }
+        .footer h4::after { content: ''; position: absolute; bottom: 0; right: 0; width: 40px; height: 3px; background: var(--accent); border-radius: 3px; }
+        html[dir="ltr"] .footer h4::after { right: auto; left: 0; }
+        .footer p, .footer a { font-size: 1rem; color: var(--text-light); line-height: 2; text-decoration: none; transition: var(--transition); }
+        .footer a:hover { color: var(--primary-light); padding-right: 8px; }
+        html[dir="ltr"] .footer a:hover { padding-right: 0; padding-left: 8px; }
+        .footer ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .footer ul li i { margin-left: 10px; color: var(--accent); }
+        html[dir="ltr"] .footer ul li i { margin-left: 0; margin-right: 10px; transform: rotate(180deg); }
+        .copyright { text-align: center; margin-top: 50px; padding-top: 25px; border-top: 1px solid var(--glass-border); font-size: 0.95rem; color: var(--text-light); }
+
+        /* ═══ القائمة الجانبية (Offcanvas) ═══ */
+        .offcanvas-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 999; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .offcanvas-overlay.show { opacity: 1; visibility: visible; }
+        .offcanvas-drawer { position: fixed; top: 0; right: -400px; width: 350px; height: 100%; background: var(--card-bg); backdrop-filter: blur(30px); border-left: 1px solid var(--glass-border); z-index: 1000; transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px; overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,0.2); }
+        .offcanvas-drawer.show { right: 0; }
+        html[dir="ltr"] .offcanvas-drawer { right: auto; left: -400px; border-left: none; border-right: 1px solid var(--glass-border); }
+        html[dir="ltr"] .offcanvas-drawer.show { left: 0; }
+        
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--glass-border); padding-bottom: 20px; margin-bottom: 25px; }
+        .drawer-header h3 { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+        [data-theme="dark"] .drawer-header h3 { color: #fff; }
+        .close-btn { background: transparent; border: none; font-size: 1.8rem; color: var(--text-light); cursor: pointer; transition: var(--transition); }
+        .close-btn:hover { color: #ef4444; transform: rotate(90deg); }
+        
+        .drawer-links { display: flex; flex-direction: column; gap: 12px; }
+        .drawer-links a { text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.05rem; padding: 14px 18px; border-radius: 12px; background: var(--glass-bg); border: 1px solid transparent; transition: var(--transition); display: flex; align-items: center; gap: 15px; }
+        .drawer-links a:hover { background: var(--primary-light); color: white; border-color: var(--primary-light); transform: translateX(-8px); box-shadow: 0 5px 15px rgba(59,130,246,0.3); }
+        html[dir="ltr"] .drawer-links a:hover { transform: translateX(8px); }
+
+        /* أزرار اللغة في القائمة الجانبية (للهواتف) */
+        .mobile-only-lang { display: none; }
+
+        /* زر العودة للأعلى */
+        .back-to-top { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(59,130,246,0.4); opacity: 0; visibility: hidden; transition: var(--transition); z-index: 99; }
+        .back-to-top.show { opacity: 1; visibility: visible; }
+        .back-to-top:hover { transform: translateY(-5px) scale(1.1); }
+        html[dir="ltr"] .back-to-top { right: auto; left: 30px; }
+
+        /* تأثير الظهور عند التمرير */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* ═══ التجاوب مع الهواتف (Full Screen & Clean UI) ═══ */
+        @media (max-width: 992px) {
+            body { padding: 10px; } /* هوامش خارجية بسيطة جداً */
+            .main-container { padding: 0; width: 100%; max-width: 100%; } /* الشاشة كاملة */
+            
+            .navbar { padding: 10px 15px; border-radius: 15px; top: 10px; margin-bottom: 15px; }
+            .navbar .logo { font-size: 1.1rem; gap: 8px; }
+            .navbar .logo i.fa-university { font-size: 1.3rem; }
+            
+            /* إخفاء الروابط وأزرار اللغات العلوية */
+            .nav-links, .desktop-only { display: none !important; }
+            
+            /* إظهار أيقونة القائمة داخل الشعار */
+            .mobile-menu-icon { display: flex; }
+            
+            .icon-btn { width: 36px; height: 36px; font-size: 1rem; }
+
+            .hero { padding: 40px 15px; border-radius: 15px; margin-bottom: 25px; }
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .btn-primary { padding: 12px 25px; font-size: 1rem; }
+            
+            .ticker-wrap { border-radius: 10px; padding: 8px 0; }
+            .ticker { font-size: 0.85rem; }
+            
+            .section-title { font-size: 1.5rem; margin: 40px 0 20px; }
+            
+            .stats-grid, .cards-grid, .features-box ul { grid-template-columns: 1fr; gap: 15px; }
+            
+            .card { padding: 20px; }
+            .stat-card { padding: 20px 15px; }
+            .stat-icon { font-size: 2rem; }
+            .stat-number { font-size: 2rem; }
+            
+            .map-container-wrapper { padding: 5px; }
+            #map { height: 300px; border-radius: 10px; }
+
+            .footer { padding: 40px 15px 15px; border-radius: 15px 15px 0 0; }
+            .footer-grid { gap: 25px; }
+            .offcanvas-drawer { width: 85%; max-width: 350px; padding: 20px; }
+            
+            /* إظهار أزرار اللغات داخل القائمة الجانبية */
+            .mobile-only-lang { display: flex; justify-content: center; width: 100%; background: var(--glass-bg); padding: 5px; border-radius: 50px; margin-bottom: 20px; border: 1px solid var(--glass-border); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="screen" id="setupScreen">
-        <div class="setup-card">
-            <h1 style="margin-bottom: 20px;">Elyctro</h1>
-            <input type="file" id="avatarInput" accept="image/*" hidden>
-            <div class="avatar-upload" id="avatarPreviewBtn">
-                <span class="material-symbols-rounded" id="avatarPlaceholderIcon">person</span>
-                <img id="avatarImage" src="">
-                <div class="camera-icon"><span class="material-symbols-rounded">photo_camera</span></div>
-            </div>
-            <div class="input-group">
-                <span class="material-symbols-rounded" style="color:var(--text-secondary)">badge</span>
-                <input type="text" id="nameInput" placeholder="اسمك" maxlength="20">
-            </div>
-            <button class="btn-primary" id="saveProfileBtn">حفظ والبدء</button>
-        </div>
-    </div>
+    <div class="particles-container" id="particlesContainer"></div>
 
-    <div class="screen hidden" id="homeScreen">
-        <header class="header">
-            <div class="header-title">Elyctro</div>
-            <div class="header-icon" id="openSettingsBtn"><span class="material-symbols-rounded">settings</span></div>
-        </header>
-        <div class="chat-list" id="chatList"></div>
-        <button class="fab" id="fabAdd"><span class="material-symbols-rounded">add_comment</span></button>
-    </div>
-
-    <div class="screen hidden" id="chatScreen">
-        <header class="chat-screen-header">
-            <button class="back-btn" onclick="closeChat()"><span class="material-symbols-rounded">arrow_forward</span></button>
-            <div class="chat-avatar" id="peerAvatarHeader"><span class="material-symbols-rounded">person</span></div>
-            <div class="chat-info">
-                <div class="chat-name" id="chatHeaderName">جهاز العائلة</div>
-                <div class="chat-status" id="chatHeaderStatus">غير متصل</div>
+    <div class="main-container">
+        
+        <!-- شريط التنقل -->
+        <nav class="navbar reveal">
+            <!-- الشعار يفتح القائمة في الهاتف -->
+            <div class="logo" onclick="toggleOffcanvas()">
+                <i class="fas fa-university"></i> 
+                <span data-i18n="uni_name">جامعة الناجي</span>
+                <i class="fas fa-bars mobile-menu-icon"></i>
             </div>
-            <div class="header-actions">
-                <button class="action-btn" id="startCallBtn"><span class="material-symbols-rounded">call</span></button>
-                <button class="action-btn" id="chatMenuBtn"><span class="material-symbols-rounded">more_vert</span></button>
+            
+            <!-- الروابط (لابتوب) -->
+            <div class="nav-links">
+                <a href="index.html" data-i18n="nav_home">الرئيسية</a>
+                <a href="#about" data-i18n="nav_about">عن الجامعة</a>
+                <a href="#colleges" data-i18n="nav_colleges">الكليات</a>
+                <a href="#research" data-i18n="nav_research">البحث العلمي</a>
+                <a href="portal.html" class="portal-btn-nav"><i class="fas fa-sign-in-alt"></i> <span data-i18n="nav_portal">البوابة</span></a>
             </div>
-        </header>
-        <div class="messages-area" id="messagesArea"></div>
-        <div class="composer-wrapper">
-            <div class="emoji-picker" id="emojiPicker">
-                <span onclick="insertEmoji('😀')">😀</span><span onclick="insertEmoji('😂')">😂</span><span onclick="insertEmoji('❤️')">❤️</span>
-                <span onclick="insertEmoji('👍')">👍</span><span onclick="insertEmoji('🔥')">🔥</span><span onclick="insertEmoji('😍')">😍</span>
-            </div>
-            <footer class="composer">
-                <span class="material-symbols-rounded" id="emojiBtn">sentiment_satisfied_alt</span>
-                <div class="composer-input-wrapper">
-                    <input type="text" id="msgInput" placeholder="رسالة..." dir="auto">
-                    <span class="material-symbols-rounded" id="attachBtn">attach_file</span>
-                    <input type="file" id="imageInput" accept="image/*" hidden>
+            
+            <!-- الإجراءات (الوضع الليلي واللغات) -->
+            <div class="nav-actions">
+                <!-- اللغات للابتوب فقط -->
+                <div class="lang-switch desktop-only">
+                    <button class="lang-btn active" onclick="setLanguage('ar')">ع</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                    <button class="lang-btn" onclick="setLanguage('ku')">KU</button>
                 </div>
-                <button class="send-btn" id="sendBtn"><span class="material-symbols-rounded" id="sendIcon">mic</span></button>
-            </footer>
-        </div>
-    </div>
-
-    <div class="screen hidden" id="settingsScreen">
-        <header class="header">
-            <button class="back-btn" onclick="closeSettings()"><span class="material-symbols-rounded">arrow_forward</span></button>
-            <div class="header-title">الإعدادات</div>
-        </header>
-        <div class="settings-profile">
-            <input type="file" id="settingsAvatarInput" accept="image/*" hidden>
-            <div class="avatar-upload" onclick="document.getElementById('settingsAvatarInput').click()">
-                <span class="material-symbols-rounded" id="settingsAvatarIcon">person</span>
-                <img id="settingsAvatarImage" src="" style="display:none;">
-                <div class="camera-icon"><span class="material-symbols-rounded">photo_camera</span></div>
+                
+                <button class="icon-btn" onclick="toggleTheme()" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
-            <h2 id="settingsNameDisplay">اسمك</h2>
+        </nav>
+
+        <!-- شريط الأخبار -->
+        <div class="ticker-wrap reveal">
+            <div class="ticker">
+                <span data-i18n="ticker_text">🎓 جامعة الناجي الأهلية – معترف بها رسميًا من وزارة التعليم العالي بموجب كتاب ذي العدد (ت هـ أ /ك25387) بتاريخ 24/10/2024 🎓</span>
+            </div>
         </div>
-        <div class="settings-list">
-            <div class="settings-item" onclick="editProfileName()"><span class="material-symbols-rounded">edit</span> تغيير الاسم</div>
-            <div class="settings-item" style="color:var(--danger);" onclick="clearAllData()"><span class="material-symbols-rounded">delete_forever</span> حذف البيانات</div>
+
+        <!-- القسم الرئيسي -->
+        <section class="hero reveal">
+            <h1 data-i18n="uni_name">جامعة الناجي</h1>
+            <p data-i18n="hero_motto">رصانة... تجدد... إبداع</p>
+            <a href="portal.html" class="btn-primary">
+                <i class="fas fa-laptop"></i> <span data-i18n="hero_btn">الخدمات الإلكترونية</span>
+            </a>
+        </section>
+
+        <!-- الإحصائيات -->
+        <h2 class="section-title reveal" data-i18n="stats_title">الجامعة بالأرقام</h2>
+        <div class="stats-grid reveal" id="stats-container"></div>
+
+        <!-- الكليات -->
+        <h2 class="section-title reveal" id="colleges" data-i18n="colleges_title">كليات الجامعة</h2>
+        <div class="cards-grid reveal" id="colleges-container"></div>
+
+        <!-- المنصات البحثية -->
+        <h2 class="section-title reveal" id="research" data-i18n="research_title">المنصات البحثية العالمية</h2>
+        <div class="cards-grid reveal">
+            <a href="https://scholar.google.com/" target="_blank" class="card">
+                <div class="icon-box"><i class="fab fa-google"></i></div>
+                <h3>Google Scholar</h3>
+                <p data-i18n="res_scholar">Research Profile</p>
+            </a>
+            <a href="https://www.scopus.com/" target="_blank" class="card">
+                <div class="icon-box"><i class="fas fa-book-open"></i></div>
+                <h3>Scopus</h3>
+                <p data-i18n="res_scopus">Author Profile</p>
+            </a>
+            <a href="https://orcid.org/" target="_blank" class="card">
+                <div class="icon-box"><i class="fas fa-id-badge"></i></div>
+                <h3>ORCID</h3>
+                <p data-i18n="res_orcid">Researcher Profile</p>
+            </a>
+            <a href="https://www.researchgate.net/" target="_blank" class="card">
+                <div class="icon-box"><i class="fas fa-flask"></i></div>
+                <h3>ResearchGate</h3>
+                <p data-i18n="res_rg">Research Network</p>
+            </a>
+            <a href="http://webofscience.com/" target="_blank" class="card">
+                <div class="icon-box"><i class="fas fa-globe"></i></div>
+                <h3>Web of Science</h3>
+                <p data-i18n="res_wos">Clarivate</p>
+            </a>
+        </div>
+
+        <!-- المزايا -->
+        <h2 class="section-title reveal" id="about" data-i18n="features_title">لماذا جامعة الناجي؟</h2>
+        <div class="features-box reveal">
+            <ul>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_1">تسعى الجامعة لتكون مناهجها متوافقة ومستجيبة لمتطلبات سوق العمل، ليكون الخريج متسلحاً بالمهارات والكفايات المهنية.</span></li>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_2">اعتماد مناهج معززة بالمستجدات العلمية ومتوافقة مع التطور الكبير في حقول المعرفة والاختصاص.</span></li>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_3">تجهيز المختبرات والورش بأحدث الأجهزة والتطبيقات العلمية.</span></li>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_4">ضمان ابتعاث الطلبة الأوائل وعلى نفقة الجامعة إلى الجامعات الأجنبية الرصينة للحصول على الشهادات العليا.</span></li>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_5">تطوير المهارات المختلفة والمطلوبة في سوق العمل (المهنية، التواصل، القيادة، واللغة الإنكليزية).</span></li>
+                <li><i class="fas fa-check-circle"></i> <span data-i18n="feat_6">بناء شراكات مع الجامعات الأجنبية الرصينة وتحقيق برامج مشتركة في مختلف التخصصات.</span></li>
+            </ul>
+        </div>
+
+        <!-- الخريطة -->
+        <h2 class="section-title reveal" data-i18n="map_title">موقع الجامعة (GIS)</h2>
+        <div class="map-container-wrapper reveal">
+            <div id="map"></div>
+        </div>
+
+        <!-- الفوتر -->
+        <footer class="footer reveal">
+            <div class="footer-grid">
+                <div>
+                    <h4 data-i18n="uni_name">جامعة الناجي</h4>
+                    <p data-i18n="footer_about">مؤسسة تهدف إلى تحقيق التعليم والتعلم والبحث العلمي الأصيل وتحقيق التميز والريادة في بناء مجتمع المعرفة.</p>
+                </div>
+                <div>
+                    <h4 data-i18n="footer_links">روابط سريعة</h4>
+                    <ul>
+                        <li><a href="portal.html"><i class="fas fa-angle-left"></i> <span data-i18n="nav_portal">البوابة الإلكترونية</span></a></li>
+                        <li><a href="#colleges"><i class="fas fa-angle-left"></i> <span data-i18n="nav_colleges">الكليات</span></a></li>
+                        <li><a href="#research"><i class="fas fa-angle-left"></i> <span data-i18n="nav_research">البحث العلمي</span></a></li>
+                        <li><a href="#about"><i class="fas fa-angle-left"></i> <span data-i18n="nav_about">عن الجامعة</span></a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 data-i18n="footer_contact">معلومات الاتصال</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> <span data-i18n="contact_address">بغداد - اليرموك، الأربع شوارع</span></p>
+                    <p><i class="fas fa-phone"></i> 07818999997</p>
+                    <p><i class="fas fa-phone"></i> 07745048883</p>
+                    <p><i class="fas fa-envelope"></i> info@alnaji-uni.edu.iq</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p data-i18n="footer_text">حقوق الطبع والنشر © 2026، جميع الحقوق محفوظة لجامعة الناجي</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- القائمة الجانبية (Offcanvas) -->
+    <div class="offcanvas-overlay" id="offcanvasOverlay" onclick="toggleOffcanvas()"></div>
+    <div class="offcanvas-drawer" id="offcanvasDrawer">
+        <div class="drawer-header">
+            <h3><i class="fas fa-bars"></i> <span data-i18n="menu_title">القائمة الكاملة</span></h3>
+            <button class="close-btn" onclick="toggleOffcanvas()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <!-- أزرار اللغة داخل القائمة (للهواتف فقط) -->
+        <div class="lang-switch mobile-only-lang">
+            <button class="lang-btn active" onclick="setLanguage('ar')" style="flex:1; padding: 10px;">عربي</button>
+            <button class="lang-btn" onclick="setLanguage('en')" style="flex:1; padding: 10px;">EN</button>
+            <button class="lang-btn" onclick="setLanguage('ku')" style="flex:1; padding: 10px;">KU</button>
+        </div>
+
+        <div class="drawer-links">
+            <a href="index.html"><i class="fas fa-home"></i> <span data-i18n="nav_home">الرئيسية</span></a>
+            <a href="#about"><i class="fas fa-info-circle"></i> <span data-i18n="nav_about">عن الجامعة</span></a>
+            <a href="#colleges"><i class="fas fa-graduation-cap"></i> <span data-i18n="nav_colleges">الكليات</span></a>
+            <a href="#departments"><i class="fas fa-building"></i> <span data-i18n="nav_dept">أقسام الجامعة</span></a>
+            <a href="#news"><i class="fas fa-newspaper"></i> <span data-i18n="nav_news">أخبار الجامعة</span></a>
+            <a href="sdg.html"><i class="fas fa-globe"></i> <span data-i18n="nav_sdg">أهداف التنمية المستدامة</span></a>
+            <a href="#library"><i class="fas fa-book"></i> <span data-i18n="nav_library">المكتبة</span></a>
+            <a href="#journals"><i class="fas fa-book-open"></i> <span data-i18n="nav_journals">المجلات</span></a>
+            <a href="#study-in-iraq"><i class="fas fa-plane"></i> <span data-i18n="nav_iraq">ادرس في العراق</span></a>
+            <a href="portal.html" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;"><i class="fas fa-laptop"></i> <span data-i18n="nav_portal">البوابة</span></a>
+            <a href="#contact"><i class="fas fa-envelope"></i> <span data-i18n="nav_contact">اتصل بنا</span></a>
+            <a href="#research"><i class="fas fa-microscope"></i> <span data-i18n="nav_research">منصة الباحث</span></a>
+            <a href="#ai-bot"><i class="fas fa-robot"></i> <span data-i18n="nav_bot">بوت الذكاء الاصطناعي</span></a>
         </div>
     </div>
 
-    <div id="callOverlay">
-        <div class="call-avatar" id="callAvatarIcon"><span class="material-symbols-rounded">person</span></div>
-        <div class="call-name" id="callNameDisplay">جهاز العائلة</div>
-        <div class="call-status" id="callStatusText">رنين...</div>
-        <div class="call-actions" id="callButtons"></div>
-    </div>
-
-    <div class="context-menu" id="contextMenu">
-        <div class="context-item" onclick="copyMessage()"><span class="material-symbols-rounded">content_copy</span> نسخ</div>
-        <div class="context-item" id="ctxEditBtn" onclick="startEditing()"><span class="material-symbols-rounded">edit</span> تعديل</div>
-        <div class="context-item danger" onclick="deleteMessage()"><span class="material-symbols-rounded">delete</span> حذف</div>
-    </div>
-
-    <div class="modal-overlay" id="pairingModal">
-        <div class="modal-content">
-            <h2>ربط الأجهزة (مرة واحدة فقط)</h2>
-            <p>بعد الربط، سيحاول التطبيق الاتصال تلقائياً إذا تغير الـ IP أو أعدت تشغيل الراوتر.</p>
-            <button class="modal-btn" id="btnCreateOffer"><span class="material-symbols-rounded">qr_code_scanner</span> إنشاء رمز QR</button>
-            <button class="modal-btn outline" id="btnScanOffer"><span class="material-symbols-rounded">document_scanner</span> مسح رمز QR</button>
-            <button class="modal-btn" style="background: transparent; color: var(--text-secondary);" id="btnCloseModal">إلغاء</button>
-            <div class="qr-box" id="qrContainer"></div>
-            <p id="pairStatus" style="margin-top: 15px; color: var(--accent); font-weight: bold;"></p>
-            <video id="scannerVideo" playsinline></video>
-            <canvas id="scannerCanvas"></canvas>
-        </div>
-    </div>
+    <!-- زر العودة للأعلى -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script>
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(e=>console.log(e));
+        // ═══════════════════════════════════════════════════════
+        // 1. البيانات المدمجة
+        // ═══════════════════════════════════════════════════════
+        const siteData = {
+            stats: [
+                { icon: "fa-chalkboard-teacher", value: 294, label: { ar: "الأساتذة", en: "Professors", ku: "مامۆستایان" } },
+                { icon: "fa-users-cog", value: 70, label: { ar: "الفنيين والإداريين", en: "Staff", ku: "کارمەندان" } },
+                { icon: "fa-university", value: 5, label: { ar: "الكليات", en: "Colleges", ku: "کۆلێژەکان" } },
+                { icon: "fa-book", value: 12, label: { ar: "الأقسام", en: "Departments", ku: "بەشەکان" } },
+                { icon: "fa-user-graduate", value: 900, label: { ar: "الطلاب", en: "Students", ku: "قوتابیان" } }
+            ],
+            colleges: [
+                { icon: "fa-tooth", name: { ar: "كلية طب الأسنان", en: "College of Dentistry", ku: "کۆلێژی ددان" } },
+                { icon: "fa-pills", name: { ar: "كلية الصيدلة", en: "College of Pharmacy", ku: "کۆلێژی دەرمانسازی" } },
+                { icon: "fa-ruler-combined", name: { ar: "كلية الهندسة", en: "College of Engineering", ku: "کۆلێژی ئەندازیاری" } },
+                { icon: "fa-stethoscope", name: { ar: "كلية التقنيات الصحية", en: "College of Health Tech", ku: "کۆلێژی تەکنیکی تەندروستی" } },
+                { icon: "fa-book-reader", name: { ar: "كلية التربية", en: "College of Education", ku: "کۆلێژی پەروەردە" } }
+            ]
+        };
 
-        let userProfile = { name: 'مستخدم', avatar: '' };
-        let peerProfile = { name: 'جهاز العائلة', avatar: '' };
-        let messages = [];
-        let selectedMessageId = null, editingMessageId = null, pressTimer, offlineQueue = [];
+        // ═══════════════════════════════════════════════════════
+        // 2. الترجمة (i18n)
+        // ═══════════════════════════════════════════════════════
+        const translations = {
+            ar: {
+                uni_name: "جامعة الناجي", hero_motto: "رصانة... تجدد... إبداع", hero_btn: "الخدمات الإلكترونية",
+                nav_home: "الرئيسية", nav_about: "عن الجامعة", nav_colleges: "الكليات", nav_sdg: "التنمية المستدامة", nav_portal: "البوابة",
+                stats_title: "الجامعة بالأرقام", colleges_title: "كليات الجامعة", research_title: "المنصات البحثية العالمية",
+                features_title: "لماذا جامعة الناجي؟", news_title: "آخر الأخبار", map_title: "موقع الجامعة (GIS)",
+                footer_text: "حقوق الطبع والنشر © 2026، جميع الحقوق محفوظة لجامعة الناجي",
+                ticker_text: "🎓 جامعة الناجي الأهلية – معترف بها رسميًا من وزارة التعليم العالي بموجب كتاب ذي العدد (ت هـ أ /ك25387) بتاريخ 24/10/2024 🎓",
+                menu_title: "القائمة الكاملة", nav_dept: "أقسام الجامعة", nav_news: "أخبار الجامعة", nav_library: "المكتبة", nav_journals: "المجلات", nav_iraq: "ادرس في العراق", nav_contact: "اتصل بنا", nav_research: "منصة الباحث", nav_bot: "بوت الذكاء الاصطناعي",
+                feat_1: "تسعى الجامعة لتكون مناهجها متوافقة ومستجيبة لمتطلبات سوق العمل، ليكون الخريج متسلحاً بالمهارات والكفايات المهنية.",
+                feat_2: "اعتماد مناهج معززة بالمستجدات العلمية ومتوافقة مع التطور الكبير في حقول المعرفة والاختصاص.",
+                feat_3: "تجهيز المختبرات والورش بأحدث الأجهزة والتطبيقات العلمية.",
+                feat_4: "ضمان ابتعاث الطلبة الأوائل وعلى نفقة الجامعة إلى الجامعات الأجنبية الرصينة للحصول على الشهادات العليا.",
+                feat_5: "تطوير المهارات المختلفة والمطلوبة في سوق العمل (المهنية، التواصل، القيادة، واللغة الإنكليزية).",
+                feat_6: "بناء شراكات مع الجامعات الأجنبية الرصينة وتحقيق برامج مشتركة في مختلف التخصصات.",
+                res_scholar: "Research Profile", res_scopus: "Author Profile", res_orcid: "Researcher Profile", res_rg: "Research Network", res_wos: "Clarivate",
+                footer_about: "مؤسسة تهدف إلى تحقيق التعليم والتعلم والبحث العلمي الأصيل وتحقيق التميز والريادة في بناء مجتمع المعرفة.",
+                footer_links: "روابط سريعة", footer_contact: "معلومات الاتصال", contact_address: "بغداد - اليرموك، الأربع شوارع"
+            },
+            en: {
+                uni_name: "Al-Naji University", hero_motto: "Rigour... Renewal... Creativity", hero_btn: "E-Services",
+                nav_home: "Home", nav_about: "About", nav_colleges: "Colleges", nav_sdg: "SDGs", nav_portal: "Portal",
+                stats_title: "University in Numbers", colleges_title: "Our Colleges", research_title: "Global Research Platforms",
+                features_title: "Why Al-Naji University?", news_title: "Latest News", map_title: "Location (GIS)",
+                footer_text: "Copyright © 2026, All Rights Reserved to Al-Naji University",
+                ticker_text: "🎓 Al-Naji University – Officially recognized by the Ministry of Higher Education (Book No. 25387) dated 24/10/2024 🎓",
+                menu_title: "Full Menu", nav_dept: "Departments", nav_news: "News", nav_library: "Library", nav_journals: "Journals", nav_iraq: "Study in Iraq", nav_contact: "Contact Us", nav_research: "Research Platform", nav_bot: "AI Chatbot",
+                feat_1: "The university seeks to align its curricula with labor market requirements, equipping graduates with professional skills.",
+                feat_2: "Adopting curricula enhanced with scientific developments and aligned with the vast progress in knowledge fields.",
+                feat_3: "Equipping laboratories and workshops with the latest scientific devices and applications.",
+                feat_4: "Guaranteeing scholarships for top students at the university's expense to prestigious foreign universities for higher degrees.",
+                feat_5: "Developing various skills required in the labor market (professional, communication, leadership, and English language).",
+                feat_6: "Building partnerships with prestigious foreign universities and achieving joint programs in various disciplines.",
+                res_scholar: "Research Profile", res_scopus: "Author Profile", res_orcid: "Researcher Profile", res_rg: "Research Network", res_wos: "Clarivate",
+                footer_about: "An institution aiming to achieve authentic education, learning, and scientific research, and to achieve excellence in building a knowledge society.",
+                footer_links: "Quick Links", footer_contact: "Contact Info", contact_address: "Baghdad - Al-Yarmouk, 4 Streets"
+            },
+            ku: {
+                uni_name: "زانکۆی نەجی", hero_motto: "ڕێز... نوێبوونەوە... داهێنان", hero_btn: "خزمەتگوزارییە ئەلیکترۆنییەکان",
+                nav_home: "سەرەکی", nav_about: "دەربارە", nav_colleges: "کۆلێژەکان", nav_sdg: "گەشەپێدانی بەردەوام", nav_portal: "پۆرتاڵ",
+                stats_title: "زانکۆ بە ژمارەکان", colleges_title: "کۆلێژەکانمان", research_title: "پلاتفۆرمەکانی توێژینەوەی جیهانی",
+                features_title: "بۆچی زانکۆی نەجی؟", news_title: "دوایین هەواڵەکان", map_title: "شوێنی زانکۆ (GIS)",
+                footer_text: "مافی چاپکردن © 2026، هەموو مافەکان پارێزراون بۆ زانکۆی نەجی",
+                ticker_text: "🎓 زانکۆی نەجی – بە فەرمی ناسراوە لەلایەن وەزارەتی خوێندنی باڵا بەپێی نامەی ژمارە (25387) لە 24/10/2024 🎓",
+                menu_title: "لیستی تەواو", nav_dept: "بەشەکان", nav_news: "هەواڵەکان", nav_library: "کتێبخانە", nav_journals: "گۆڤارەکان", nav_iraq: "خوێندن لە عێراق", nav_contact: "پەیوەندی", nav_research: "پلاتفۆرمی توێژەر", nav_bot: "بۆتی زیرەکی دەستکرد",
+                feat_1: "زانکۆ هەوڵدەدات بۆ ئەوەی پڕۆگرامەکانی لەگەڵ داواکارییەکانی بازاڕی کار بگونجێت.",
+                feat_2: "پەسەندکردنی پڕۆگرامەکان کە بە دەستکەوتە زانستییەکان بەهێزکراون.",
+                feat_3: "ئامادەکردنی تاقیگەکان بە نوێترین ئامێرە زانستییەکان.",
+                feat_4: "دڵنیایی بورسی خوێندن بۆ قوتابیانی یەکەم لەسەر حسابی زانکۆ بۆ زانکۆ بیانییەکان.",
+                feat_5: "گەشەپێدانی کارامەیی جیاجیا کە لە بازاڕی کاردا داواکارییان لەسەرە.",
+                feat_6: "دروستکردنی هاوبەشی لەگەڵ زانکۆ بیانییەکان و بەدەستهێنانی پڕۆگرامی هاوبەش.",
+                res_scholar: "پرۆفایلی توێژینەوە", res_scopus: "پرۆفایلی نووسەر", res_orcid: "پرۆفایلی توێژەر", res_rg: "تۆڕی توێژینەوە", res_wos: "کلاریڤیت",
+                footer_about: "دامەزراوەیەک کە ئامانجی بەدەستهێنانی خوێندن و توێژینەوەی زانستی ڕەسەنە و بنیاتنانی کۆمەڵگەی زانست.",
+                footer_links: "بەستەرە خێراکان", footer_contact: "زانیاری پەیوەندی", contact_address: "بەغدا - یەرموک، چوار شەقام"
+            }
+        };
 
-        if (localStorage.getItem('elyctro_profile')) {
-            userProfile = JSON.parse(localStorage.getItem('elyctro_profile'));
-            showHomeScreen();
+        let currentLang = 'ar';
+
+        // إدارة اللغة
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.dir = (lang === 'en') ? 'ltr' : 'rtl';
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+            });
+
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            const btns = document.querySelectorAll(`.lang-btn[onclick="setLanguage('${lang}')"]`);
+            btns.forEach(btn => btn.classList.add('active'));
+            
+            localStorage.setItem('site_lang', lang);
+            renderData(); 
         }
 
-        // --- الملف الشخصي ---
-        const setupScreen = document.getElementById('setupScreen'), homeScreen = document.getElementById('homeScreen');
-        document.getElementById('avatarPreviewBtn').onclick = () => document.getElementById('avatarInput').click();
-        document.getElementById('avatarInput').onchange = (e) => handleAvatarUpload(e, 'avatarImage', 'avatarPlaceholderIcon');
-        document.getElementById('settingsAvatarInput').onchange = (e) => handleAvatarUpload(e, 'settingsAvatarImage', 'settingsAvatarIcon');
+        // بناء البيانات
+        function renderData() {
+            document.getElementById('stats-container').innerHTML = siteData.stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas ${stat.icon}"></i></div>
+                    <div class="stat-number" data-target="${stat.value}">0</div>
+                    <div class="stat-title">${stat.label[currentLang]}</div>
+                </div>
+            `).join('');
+            animateCounters();
 
-        function handleAvatarUpload(event, imgId, iconId) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const base64 = ev.target.result;
-                    document.getElementById(imgId).src = base64;
-                    document.getElementById(imgId).style.display = 'block';
-                    document.getElementById(iconId).style.display = 'none';
-                    if (imgId === 'settingsAvatarImage') { userProfile.avatar = base64; saveProfile(); sendProfile(); } 
-                    else { userProfile.avatar = base64; }
+            document.getElementById('colleges-container').innerHTML = siteData.colleges.map(college => `
+                <a href="#" class="card">
+                    <div class="icon-box"><i class="fas ${college.icon}"></i></div>
+                    <h3>${college.name[currentLang]}</h3>
+                </a>
+            `).join('');
+        }
+
+        // الوظائف المساعدة
+        function animateCounters() {
+            document.querySelectorAll('.stat-number').forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                let count = 0;
+                const step = Math.max(1, Math.ceil(target / 50));
+                const update = () => {
+                    count += step;
+                    if (count < target) { counter.innerText = count; requestAnimationFrame(update); }
+                    else { counter.innerText = target + '+'; }
                 };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        document.getElementById('saveProfileBtn').onclick = () => {
-            const name = document.getElementById('nameInput').value.trim();
-            if (!name) return alert('الرجاء كتابة اسمك');
-            userProfile.name = name; saveProfile(); showHomeScreen();
-        };
-
-        function saveProfile() { localStorage.setItem('elyctro_profile', JSON.stringify(userProfile)); updateSettingsUI(); }
-        function showHomeScreen() { setupScreen.classList.add('hidden'); homeScreen.classList.remove('hidden'); updateSettingsUI(); renderChatList(); }
-        
-        const settingsScreen = document.getElementById('settingsScreen');
-        document.getElementById('openSettingsBtn').onclick = () => { settingsScreen.classList.remove('hidden'); settingsScreen.classList.add('slide-in'); };
-        function closeSettings() { settingsScreen.classList.remove('slide-in'); setTimeout(() => settingsScreen.classList.add('hidden'), 300); }
-        function updateSettingsUI() { document.getElementById('settingsNameDisplay').innerText = userProfile.name; if (userProfile.avatar) { document.getElementById('settingsAvatarImage').src = userProfile.avatar; document.getElementById('settingsAvatarImage').style.display = 'block'; document.getElementById('settingsAvatarIcon').style.display = 'none'; } }
-        function editProfileName() { const newName = prompt('أدخل اسمك الجديد:', userProfile.name); if (newName && newName.trim()) { userProfile.name = newName.trim(); saveProfile(); sendProfile(); } }
-        function clearAllData() { if (confirm('هل أنت متأكد من حذف جميع البيانات وإلغاء الاقتران؟')) { localStorage.clear(); location.reload(); } }
-
-        // --- الرسائل والواجهة ---
-        const messagesArea = document.getElementById('messagesArea'), contextMenu = document.getElementById('contextMenu'), msgInput = document.getElementById('msgInput'), chatScreen = document.getElementById('chatScreen');
-        document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
-
-        function renderMessages() {
-            messagesArea.innerHTML = '';
-            messages.forEach(m => {
-                const time = new Date(m.time).toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' });
-                const checkIcon = (m.dir === 'mine' && !m.isDeleted) ? (m.status === 'read' ? '<span class="material-symbols-rounded read">done_all</span>' : m.status === 'sent' ? '<span class="material-symbols-rounded">done_all</span>' : '<span class="material-symbols-rounded">schedule</span>') : '';
-                const msgDiv = document.createElement('div'); msgDiv.className = `message ${m.dir === 'mine' ? 'mine' : ''}`;
-                if (m.isDeleted) { msgDiv.innerHTML = `<div class="msg-text" style="font-style:italic;color:var(--text-secondary);">🚫 تم حذف هذه الرسالة</div>`; } 
-                else {
-                    let content = m.type === 'image' ? `<img src="${m.text}" class="msg-image" onclick="window.open(this.src)">` : m.type === 'audio' ? `<audio controls src="${m.text}" style="width:200px;"></audio>` : `<div class="msg-text">${m.text}</div>`;
-                    msgDiv.innerHTML = `${content}<div class="meta">${time} ${checkIcon}</div>`;
-                }
-                msgDiv.addEventListener('mousedown', (e) => startPress(e, m.id)); msgDiv.addEventListener('touchstart', (e) => startPress(e, m.id), {passive: true});
-                msgDiv.addEventListener('mouseup', cancelPress); msgDiv.addEventListener('touchend', cancelPress); msgDiv.addEventListener('touchmove', cancelPress);
-                messagesArea.appendChild(msgDiv);
+                update();
             });
-            messagesArea.scrollTop = messagesArea.scrollHeight; renderChatList();
         }
 
-        function startPress(e, id) { if (messages.find(m => m.id === id)?.isDeleted) return; pressTimer = setTimeout(() => showContextMenu(e, id), 500); }
-        function cancelPress() { clearTimeout(pressTimer); }
-        function showContextMenu(e, id) {
-            selectedMessageId = id; const msg = messages.find(m => m.id === id);
-            document.getElementById('ctxEditBtn').style.display = (msg.dir === 'mine' && msg.type === 'text') ? 'flex' : 'none';
-            let x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; let y = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            contextMenu.style.display = 'block';
-            if (x + contextMenu.offsetWidth > window.innerWidth) x -= contextMenu.offsetWidth; if (y + contextMenu.offsetHeight > window.innerHeight) y -= contextMenu.offsetHeight;
-            contextMenu.style.left = `${x}px`; contextMenu.style.top = `${y}px`; if (navigator.vibrate) navigator.vibrate(50);
-        }
-        function copyMessage() { const msg = messages.find(m => m.id === selectedMessageId); if (msg && !msg.isDeleted && msg.type==='text') navigator.clipboard.writeText(msg.text); contextMenu.style.display = 'none'; }
-        function deleteMessage() { const msg = messages.find(m => m.id === selectedMessageId); if (msg) { msg.isDeleted = true; msg.text = ''; if (dataChannel && dataChannel.readyState === 'open') dataChannel.send(JSON.stringify({ type: 'delete', id: msg.id })); renderMessages(); } contextMenu.style.display = 'none'; }
-        function startEditing() { const msg = messages.find(m => m.id === selectedMessageId); if (msg) { editingMessageId = msg.id; msgInput.value = msg.text; msgInput.focus(); document.getElementById('sendIcon').innerText = 'check'; } contextMenu.style.display = 'none'; }
-        function cancelEditing() { editingMessageId = null; msgInput.value = ''; document.getElementById('sendIcon').innerText = 'mic'; checkInput(); }
-
-        document.getElementById('sendBtn').onclick = () => {
-            if (isRecording) { stopRecording(true); return; }
-            const text = msgInput.value.trim(); if (!text) return;
-            if (editingMessageId) {
-                const msg = messages.find(m => m.id === editingMessageId);
-                if (msg) { msg.text = text; msg.isEdited = true; if (dataChannel && dataChannel.readyState === 'open') dataChannel.send(JSON.stringify({ type: 'edit', id: msg.id, text: text })); }
-                cancelEditing();
-            } else { sendMessageData('text', text); msgInput.value = ''; checkInput(); }
-            renderMessages();
-        };
-        
-        function sendMessageData(type, content) {
-            const newMsg = { id: Date.now().toString(), text: content, type: type, dir: 'mine', time: Date.now(), isEdited: false, isDeleted: false, status: 'pending' };
-            messages.push(newMsg);
-            if (dataChannel && dataChannel.readyState === 'open') { dataChannel.send(JSON.stringify({ type: 'chat', msgType: type, text: content, id: newMsg.id })); newMsg.status = 'sent'; } 
-            else { offlineQueue.push(newMsg); }
-            renderMessages();
-        }
-        msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
-        function checkInput() { if (msgInput.value.trim().length > 0) { document.getElementById('sendIcon').innerText = 'send'; document.getElementById('sendBtn').classList.remove('recording'); } else { document.getElementById('sendIcon').innerText = 'mic'; } }
-        msgInput.addEventListener('input', () => { checkInput(); sendTypingStatus(); });
-
-        document.getElementById('attachBtn').onclick = () => document.getElementById('imageInput').click();
-        document.getElementById('imageInput').onchange = (e) => {
-            const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (ev) => sendMessageData('image', ev.target.result); reader.readAsDataURL(file); }
-        };
-
-        let mediaRecorder, audioChunks = [], isRecording = false;
-        document.getElementById('sendBtn').addEventListener('touchstart', async (e) => {
-            if (msgInput.value.trim().length === 0) {
-                e.preventDefault();
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream); audioChunks = [];
-                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-                    mediaRecorder.start(); isRecording = true; document.getElementById('sendBtn').classList.add('recording');
-                    if (navigator.vibrate) navigator.vibrate(50);
-                } catch (err) { alert('تعذر الوصول للمايك'); }
-            }
-        });
-        document.getElementById('sendBtn').addEventListener('touchend', (e) => { if (isRecording) { e.preventDefault(); stopRecording(true); } });
-
-        function stopRecording(send) {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-            mediaRecorder.stop(); isRecording = false; document.getElementById('sendBtn').classList.remove('recording');
-            mediaRecorder.onstop = () => {
-                if (send) { const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); const reader = new FileReader(); reader.onloadend = () => sendMessageData('audio', reader.result); reader.readAsDataURL(audioBlob); }
-                mediaRecorder.stream.getTracks().forEach(t => t.stop());
-            };
-        }
-
-        let typingTimeout;
-        function sendTypingStatus() {
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify({ type: 'typing', state: true }));
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => { dataChannel.send(JSON.stringify({ type: 'typing', state: false })); }, 2000);
-            }
-        }
-
-        document.getElementById('emojiBtn').onclick = () => { const picker = document.getElementById('emojiPicker'); picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; };
-        function insertEmoji(emoji) { msgInput.value += emoji; document.getElementById('emojiPicker').style.display = 'none'; checkInput(); }
-
-        function openChatUI() { homeScreen.classList.add('hidden'); chatScreen.classList.remove('hidden'); chatScreen.classList.add('slide-in'); renderMessages(); markMessagesAsRead(); }
-        function closeChat() { chatScreen.classList.remove('slide-in'); setTimeout(() => { chatScreen.classList.add('hidden'); homeScreen.classList.remove('hidden'); renderChatList(); }, 300); }
-        function renderChatList() {
-            const list = document.getElementById('chatList'); const lastMsg = messages.slice().reverse().find(m => !m.isDeleted);
-            let preview = 'ابدأ المحادثة الآن...'; let time = '';
-            if (lastMsg) { preview = (lastMsg.dir === 'mine' ? 'أنت: ' : '') + (lastMsg.type === 'text' ? lastMsg.text : lastMsg.type === 'image' ? '📷 صورة' : '🎤 رسالة صوتية'); time = new Date(lastMsg.time).toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }); }
-            list.innerHTML = `<div class="chat-item" onclick="openChatUI()"><div class="chat-avatar" style="background: var(--accent);">${peerProfile.avatar ? `<img src="${peerProfile.avatar}">` : `<span class="material-symbols-rounded" style="color:white;">person</span>`}</div><div class="chat-info"><div class="chat-name">${peerProfile.name} <span class="chat-time">${time}</span></div><div class="chat-preview">${preview}</div></div></div>`;
-        }
-        function updatePeerUI(name, avatar) {
-            peerProfile.name = name || 'جهاز العائلة'; peerProfile.avatar = avatar || '';
-            document.getElementById('chatHeaderName').innerText = peerProfile.name; document.getElementById('callNameDisplay').innerText = peerProfile.name;
-            if (avatar) { document.getElementById('peerAvatarHeader').innerHTML = `<img src="${avatar}">`; document.getElementById('callAvatarIcon').innerHTML = `<img src="${avatar}">`; }
-            renderChatList();
-        }
-        function markMessagesAsRead() { let hasUnread = false; messages.forEach(m => { if (m.dir === 'them' && m.status !== 'read') { m.status = 'read'; hasUnread = true; }}); if (hasUnread) { renderMessages(); if (navigator.clearAppBadge) navigator.clearAppBadge(); } }
-
-        // ==========================================
-        // 🧠 محرك الاتصال الذكي (Smart Reconnection)
-        // ==========================================
-        const RTC_CONFIG = { iceServers: [] }; 
-        let pc = null, dataChannel = null, localStream = null, remoteAudio = new Audio();
-        let callState = 'idle', callTimer = null, callDuration = 0;
-        let isInitiator = false; 
-        let heartbeatInterval = null;
-        let lastPongTime = Date.now();
-        let isReconnecting = false;
-
-        // بدء محاولة الاتصال التلقائي عند فتح التطبيق
-        window.addEventListener('load', () => {
-            setTimeout(tryAutoReconnect, 1000);
-        });
-
-        async function tryAutoReconnect() {
-            const savedOffer = localStorage.getItem('saved_offer');
-            const savedAnswer = localStorage.getItem('saved_answer');
-            const savedRole = localStorage.getItem('saved_role');
-
-            if (savedOffer && savedAnswer && savedRole) {
-                console.log("جاري محاولة إحياء الجلسة القديمة...");
-                document.getElementById('chatHeaderStatus').innerText = "جاري إعادة الاتصال التلقائي...";
-                document.getElementById('chatHeaderStatus').style.color = "var(--accent)";
-                
-                isInitiator = (savedRole === 'initiator');
-                initPeerConnection();
-                
-                if (isInitiator) {
-                    const channel = pc.createDataChannel('elyctro-chat');
-                    setupDataChannel(channel);
-                }
-                
-                try {
-                    await pc.setLocalDescription(JSON.parse(savedOffer));
-                    await pc.setRemoteDescription(JSON.parse(savedAnswer));
-                    
-                    // هذه هي النقطة السحرية: إعادة تشغيل ICE لاكتشاف الـ IP الجديد
-                    pc.restartIce(); 
-                } catch (e) {
-                    console.log("فشل الإحياء السريع:", e);
-                    document.getElementById('chatHeaderStatus').innerText = "غير متصل (يتطلب مسح QR)";
-                    document.getElementById('chatHeaderStatus').style.color = "var(--danger)";
-                }
-            }
-        }
-
-        function initPeerConnection() {
-            pc = new RTCPeerConnection(RTC_CONFIG);
-            
-            pc.onicecandidate = (event) => {
-                if (event.candidate && dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.send(JSON.stringify({ type: 'ice', candidate: event.candidate }));
-                }
-            };
-
-            pc.onconnectionstatechange = () => {
-                const statusText = document.getElementById('chatHeaderStatus');
-                if (pc.connectionState === 'connected') {
-                    statusText.innerText = "متصل (Online)";
-                    statusText.style.color = "var(--success)";
-                    isReconnecting = false;
-                    startHeartbeat();
-                    document.getElementById('pairingModal').classList.remove('active');
-                    sendProfile();
-                    flushQueue();
-                } else if (pc.connectionState === 'disconnected') {
-                    statusText.innerText = "انقطع الاتصال.. جاري الإصلاح";
-                    statusText.style.color = "var(--danger)";
-                    if (!isReconnecting) attemptSmartReconnect();
-                } else if (pc.connectionState === 'failed') {
-                    statusText.innerText = "فشل الاتصال";
-                    statusText.style.color = "var(--danger)";
-                    if (!isReconnecting) attemptSmartReconnect();
-                }
-            };
-
-            pc.ontrack = (event) => { remoteAudio.srcObject = event.streams[0]; remoteAudio.play().catch(e => console.log(e)); };
-            pc.ondatachannel = (event) => setupDataChannel(event.channel);
-            
-            // التفاوض التلقائي (هام جداً للـ ICE Restart)
-            pc.onnegotiationneeded = async () => {
-                try {
-                    if (isInitiator) {
-                        const offer = await pc.createOffer();
-                        await pc.setLocalDescription(offer);
-                        if (dataChannel && dataChannel.readyState === 'open') {
-                            dataChannel.send(JSON.stringify({ type: 'renegotiate', sdp: pc.localDescription }));
-                        }
-                    }
-                } catch (err) { console.log(err); }
-            };
-        }
-
-        async function attemptSmartReconnect() {
-            isReconnecting = true;
-            console.log("محاولة إنقاذ الاتصال (ICE Restart)...");
-            
-            if (isInitiator) {
-                try {
-                    // إنشاء عرض جديد بالكامل
-                    const offer = await pc.createOffer({ iceRestart: true });
-                    await pc.setLocalDescription(offer);
-                    
-                    if (dataChannel && dataChannel.readyState === 'open') {
-                        dataChannel.send(JSON.stringify({ type: 'renegotiate', sdp: pc.localDescription }));
-                    } else {
-                        // إذا كانت القناة ميتة تماماً، نأمل أن الـ onnegotiationneeded سيعمل
-                        pc.restartIce();
-                    }
-                } catch (e) { console.log(e); }
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme'); themeToggle.innerHTML = '<i class="fas fa-moon"></i>'; localStorage.setItem('theme', 'light');
             } else {
-                // المستقبل يكتفي بطلب إعادة التشغيل
-                pc.restartIce();
+                html.setAttribute('data-theme', 'dark'); themeToggle.innerHTML = '<i class="fas fa-sun"></i>'; localStorage.setItem('theme', 'dark');
             }
-            
-            // إذا فشلنا خلال 10 ثوانٍ، نعيد المحاولة
-            setTimeout(() => { if (pc.connectionState !== 'connected') { isReconnecting = false; attemptSmartReconnect(); } }, 10000);
         }
 
-        function startHeartbeat() {
-            clearInterval(heartbeatInterval);
-            lastPongTime = Date.now();
-            
-            heartbeatInterval = setInterval(() => {
-                if (dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.send(JSON.stringify({ type: 'heartbeat' }));
-                    
-                    // إذا لم نستلم رداً منذ 10 ثوانٍ، نعتبر الاتصال ميتاً
-                    if (Date.now() - lastPongTime > 10000) {
-                        console.log("توقف نبض القلب! محاولة إعادة الاتصال...");
-                        pc.restartIce();
-                        lastPongTime = Date.now(); // إعادة تعيين المؤقت
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 12 + 4;
+                particle.style.width = size + 'px'; particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%'; particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 15 + 10) + 's'; particle.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        function toggleOffcanvas() {
+            document.getElementById('offcanvasDrawer').classList.toggle('show');
+            document.getElementById('offcanvasOverlay').classList.toggle('show');
+        }
+
+        // تشغيل الخريطة
+        let mapInstance = null;
+        function initMap() {
+            const uniLat = 33.2765; // إحداثيات بغداد - اليرموك
+            const uniLng = 44.3380;
+
+            if (mapInstance) return;
+            mapInstance = L.map('map').setView([uniLat, uniLng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(mapInstance);
+
+            L.marker([uniLat, uniLng]).addTo(mapInstance)
+                .bindPopup('<b>جامعة الناجي</b><br>المدخل الرئيسي').openPopup();
+
+            setTimeout(() => { mapInstance.invalidateSize(); }, 500);
+        }
+
+        // تأثير الظهور عند التمرير
+        function revealOnScroll() {
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
                     }
-                }
-            }, 3000);
-        }
-
-        function setupDataChannel(channel) {
-            dataChannel = channel;
-            dataChannel.onmessage = async (e) => {
-                const data = JSON.parse(e.data);
-                switch(data.type) {
-                    case 'heartbeat': 
-                        if (dataChannel.readyState === 'open') dataChannel.send(JSON.stringify({ type: 'heartbeat-ack' })); 
-                        break;
-                    case 'heartbeat-ack': lastPongTime = Date.now(); break;
-                    case 'profile': updatePeerUI(data.name, data.avatar); break;
-                    case 'typing': 
-                        document.getElementById('chatHeaderStatus').innerText = data.state ? "يكتب الآن..." : "متصل (Online)";
-                        document.getElementById('chatHeaderStatus').style.color = data.state ? "var(--accent)" : "var(--success)";
-                        break;
-                    case 'chat':
-                        messages.push({ id: data.id, text: data.text, type: data.msgType, dir: 'them', time: Date.now(), status: 'delivered' });
-                        renderMessages();
-                        if (chatScreen.classList.contains('hidden')) { if (navigator.setAppBadge) navigator.setAppBadge(1); } 
-                        else { markMessagesAsRead(); dataChannel.send(JSON.stringify({ type: 'read', id: data.id })); }
-                        break;
-                    case 'read':
-                        const msgToRead = messages.find(m => m.id === data.id); if (msgToRead) { msgToRead.status = 'read'; renderMessages(); }
-                        break;
-                    case 'edit':
-                        const msgE = messages.find(m => m.id === data.id); if (msgE) { msgE.text = data.text; msgE.isEdited = true; renderMessages(); }
-                        break;
-                    case 'delete':
-                        const msgD = messages.find(m => m.id === data.id); if (msgD) { msgD.isDeleted = true; msgD.text = ''; renderMessages(); }
-                        break;
-                    case 'call-request': showIncomingCall(); break;
-                    case 'call-accept': document.getElementById('callStatusText').innerText = "جاري الاتصال..."; startMedia(); break;
-                    case 'call-decline': alert('تم رفض المكالمة'); endCall(false); break;
-                    case 'call-end': endCall(false); break;
-                    case 'renegotiate':
-                        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                        const answer = await pc.createAnswer();
-                        await pc.setLocalDescription(answer);
-                        dataChannel.send(JSON.stringify({ type: 'renegotiate-answer', sdp: pc.localDescription }));
-                        break;
-                    case 'renegotiate-answer': await pc.setRemoteDescription(new RTCSessionDescription(data.sdp)); break;
-                    case 'ice': await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); break;
-                }
-            };
-        }
-
-        function sendProfile() { if (dataChannel && dataChannel.readyState === 'open') dataChannel.send(JSON.stringify({ type: 'profile', name: userProfile.name, avatar: userProfile.avatar })); }
-        function flushQueue() {
-            if (offlineQueue.length > 0 && dataChannel && dataChannel.readyState === 'open') {
-                offlineQueue.forEach(msg => { dataChannel.send(JSON.stringify({ type: 'chat', msgType: msg.type, text: msg.text, id: msg.id })); msg.status = 'sent'; });
-                offlineQueue = []; renderMessages();
-            }
-        }
-
-        // --- المكالمات ---
-        document.getElementById('startCallBtn').onclick = () => {
-            if (!dataChannel || dataChannel.readyState !== 'open') return alert('يجب الاتصال بالجهاز أولاً!');
-            if (callState !== 'idle') return;
-            callState = 'calling'; showCallOverlay('جارِ الاتصال...', 'calling');
-            dataChannel.send(JSON.stringify({ type: 'call-request' })); startMedia();
-        };
-        function showIncomingCall() { if (callState !== 'idle') { dataChannel.send(JSON.stringify({ type: 'call-decline' })); return; } callState = 'ringing'; showCallOverlay('مكالمة واردة...', 'ringing'); }
-        function acceptCall() { callState = 'active'; showCallOverlay('جاري الاتصال...', 'active'); dataChannel.send(JSON.stringify({ type: 'call-accept' })); startMedia(); }
-        async function startMedia() { try { if (!localStream) { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); localStream.getTracks().forEach(track => pc.addTrack(track, localStream)); } } catch (err) { alert('تعذر الوصول للمايكروفون.'); endCall(true); } }
-        function endCall(notifyOther = true) {
-            if (notifyOther && dataChannel && dataChannel.readyState === 'open') dataChannel.send(JSON.stringify({ type: 'call-end' }));
-            if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
-            document.getElementById('callOverlay').classList.remove('active'); callState = 'idle'; clearInterval(callTimer); callDuration = 0;
-            document.getElementById('callStatusText').innerText = "رنين...";
-        }
-        function showCallOverlay(statusText, state) {
-            const btnContainer = document.getElementById('callButtons');
-            document.getElementById('callStatusText').innerText = statusText; document.getElementById('callOverlay').classList.add('active');
-            if (state === 'calling') btnContainer.innerHTML = `<button class="call-btn decline" onclick="endCall(true)"><span class="material-symbols-rounded">call_end</span></button>`;
-            else if (state === 'ringing') btnContainer.innerHTML = `<button class="call-btn decline" onclick="endCall(true)"><span class="material-symbols-rounded">call_end</span></button><button class="call-btn accept" onclick="acceptCall()"><span class="material-symbols-rounded">call</span></button>`;
-            else if (state === 'active') {
-                btnContainer.innerHTML = `<button class="call-btn mute" id="muteBtn" onclick="toggleMute(this)"><span class="material-symbols-rounded">mic</span></button><button class="call-btn decline" onclick="endCall(true)"><span class="material-symbols-rounded">call_end</span></button>`;
-                startCallTimer();
-            }
-        }
-        function startCallTimer() {
-            callDuration = 0; clearInterval(callTimer);
-            callTimer = setInterval(() => { callDuration++; document.getElementById('callStatusText').innerText = `${Math.floor(callDuration / 60).toString().padStart(2, '0')}:${(callDuration % 60).toString().padStart(2, '0')}`; }, 1000);
-        }
-        function toggleMute(btn) {
-            if (localStream) {
-                const audioTrack = localStream.getAudioTracks()[0];
-                if (audioTrack) { audioTrack.enabled = !audioTrack.enabled; btn.classList.toggle('muted', !audioTrack.enabled); btn.innerHTML = `<span class="material-symbols-rounded">${audioTrack.enabled ? 'mic' : 'mic_off'}</span>`; }
-            }
-        }
-
-        // --- الاقتران ---
-        async function createOffer() {
-            document.getElementById('qrContainer').style.display = 'none';
-            document.getElementById('pairStatus').innerText = "جاري تجهيز الرمز...";
-            isInitiator = true; initPeerConnection();
-            const channel = pc.createDataChannel('elyctro-chat'); setupDataChannel(channel);
-            const offer = await pc.createOffer(); await pc.setLocalDescription(offer); await waitForICE(pc);
+                });
+            }, { threshold: 0.1 });
             
-            localStorage.setItem('saved_offer', JSON.stringify(pc.localDescription));
-            localStorage.setItem('saved_role', 'initiator');
+            reveals.forEach(reveal => observer.observe(reveal));
+        }
+
+        // زر العودة للأعلى
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 500) btn.classList.add('show');
+            else btn.classList.remove('show');
+        });
+
+        // التشغيل
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            createParticles();
+            renderData();
+            revealOnScroll();
+            initMap();
             
-            showQR(JSON.stringify({ type: 'offer', sdp: pc.localDescription }));
-        }
-
-        async function handleScannedCode(text) {
-            const payload = JSON.parse(text);
-            if (payload.type === 'offer') {
-                isInitiator = false; initPeerConnection(); await pc.setRemoteDescription(payload.sdp);
-                localStorage.setItem('saved_offer', JSON.stringify(payload.sdp)); localStorage.setItem('saved_role', 'receiver');
-                const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); await waitForICE(pc);
-                localStorage.setItem('saved_answer', JSON.stringify(pc.localDescription));
-                document.getElementById('pairStatus').innerText = "اعرض هذا الرمز للجهاز الأول لمسحه:";
-                showQR(JSON.stringify({ type: 'answer', sdp: pc.localDescription }));
-            } else if (payload.type === 'answer') {
-                if (pc) { await pc.setRemoteDescription(payload.sdp); localStorage.setItem('saved_answer', JSON.stringify(payload.sdp)); document.getElementById('pairStatus').innerText = "تم الاتصال!"; }
-            }
-        }
-
-        function waitForICE(peerConn) {
-            return new Promise(resolve => {
-                if (peerConn.iceGatheringState === 'complete') resolve();
-                else {
-                    const check = () => { if (peerConn.iceGatheringState === 'complete') { peerConn.removeEventListener('icegatheringstatechange', check); resolve(); } };
-                    peerConn.addEventListener('icegatheringstatechange', check); setTimeout(resolve, 2000);
-                }
-            });
-        }
-        function showQR(text) { const qrContainer = document.getElementById('qrContainer'); qrContainer.style.display = 'block'; qrContainer.innerHTML = ''; const qr = qrcode(0, 'L'); qr.addData(text); qr.make(); qrContainer.innerHTML = qr.createImgTag(6); }
-
-        async function startScanner() {
-            const video = document.getElementById('scannerVideo'); const canvas = document.getElementById('scannerCanvas'); const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            video.style.display = 'block'; document.getElementById('qrContainer').style.display = 'none';
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                video.srcObject = stream; video.setAttribute("playsinline", true); video.play();
-                requestAnimationFrame(tick);
-                function tick() {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                        canvas.height = video.videoHeight; canvas.width = video.videoWidth; ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: "dontInvert" });
-                        if (code) { stream.getTracks().forEach(track => track.stop()); video.style.display = 'none'; handleScannedCode(code.data); return; }
-                    }
-                    requestAnimationFrame(tick);
-                }
-            } catch (err) { alert('تعذر فتح الكاميرا.'); video.style.display = 'none'; }
-        }
-
-        const pairingModal = document.getElementById('pairingModal');
-        document.getElementById('fabAdd').onclick = () => pairingModal.classList.add('active');
-        document.getElementById('btnCloseModal').onclick = () => pairingModal.classList.remove('active');
-        document.getElementById('btnCreateOffer').onclick = createOffer;
-        document.getElementById('btnScanOffer').onclick = startScanner;
+            const savedLang = localStorage.getItem('site_lang');
+            if(savedLang) setLanguage(savedLang);
+        });
     </script>
 </body>
 </html>

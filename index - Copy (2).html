@@ -1,0 +1,2789 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة خدمات جامعة الناجي الإلكترونية</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="جامعة الناجي">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+    
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e40af;
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --bg: #f0f4ff;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --radius: 20px;
+            --radius-sm: 14px;
+            --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --glass-bg: rgba(15, 23, 42, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 30%, #f5f0ff 60%, #e0e7ff 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--text);
+            direction: rtl;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #1e1b4b 60%, #0f172a 100%);
+            background-size: 400% 400%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .particles-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.3);
+            animation: floatParticle 15s infinite ease-in-out;
+        }
+
+        [data-theme="dark"] .particle { background: rgba(139, 92, 246, 0.2); }
+
+        @keyframes floatParticle {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+            25% { transform: translateY(-80px) translateX(30px) scale(1.3); opacity: 0.7; }
+            50% { transform: translateY(-150px) translateX(-20px) scale(0.8); opacity: 0.4; }
+            75% { transform: translateY(-60px) translateX(-50px) scale(1.5); opacity: 0.6; }
+        }
+
+        /* ✅ زر البروفايل — مكان زر الوضع الليلي القديم */
+        .profile-toggle {
+            position: fixed;
+            top: 20px; left: 20px;
+            z-index: 100;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary-light);
+            color: var(--primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .profile-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow-hover); }
+        .profile-toggle.has-profile { border-color: #10b981; color: #10b981; }
+
+        /* ✅ زر الوضع الليلي — داخل صفحة البروفايل */
+        .theme-toggle {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary-light);
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+        .main-container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .logo-circle {
+            width: 90px; height: 90px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 15px 40px rgba(30, 58, 138, 0.4);
+            animation: glowPulse 3s ease infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 15px 40px rgba(30, 58, 138, 0.4); }
+            50% { box-shadow: 0 15px 60px rgba(139, 92, 246, 0.6); }
+        }
+
+        .logo-circle i {
+            font-size: 40px;
+            color: white;
+            animation: float 3s ease infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .header p { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
+
+        .my-requests-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 18px 20px;
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .my-requests-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .my-requests-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 45px rgba(59, 130, 246, 0.5);
+        }
+
+        .my-requests-btn i { font-size: 1.4rem; }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 30px 0 15px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-light), var(--accent));
+            margin: 10px auto 0;
+            border-radius: 4px;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .social-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            padding: 15px 8px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            border: 2px solid transparent;
+        }
+
+        .social-card:hover { transform: translateY(-8px) scale(1.05); box-shadow: var(--shadow-hover); }
+        .social-card i { font-size: 1.6rem; transition: var(--transition); }
+        .social-card:hover i { transform: scale(1.3) rotate(8deg); }
+        .social-card span { font-size: 0.7rem; font-weight: 700; color: var(--text-light); }
+        .social-card.website i { color: #2563eb; }
+        .social-card.website:hover { border-color: #2563eb; }
+        .social-card.telegram i { color: #229ED9; }
+        .social-card.telegram:hover { border-color: #229ED9; }
+        .social-card.instagram i { color: #e4405f; }
+        .social-card.instagram:hover { border-color: #e4405f; }
+        .social-card.facebook i { color: #1877f2; }
+        .social-card.facebook:hover { border-color: #1877f2; }
+        .social-card.tiktok i { color: #000000; }
+        .social-card.tiktok:hover { border-color: #000000; }
+        [data-theme="dark"] .social-card.tiktok i { color: #ffffff; }
+
+        .hepiq-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 5s ease infinite;
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 15px 40px rgba(30, 58, 138, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hepiq-section::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hepiq-logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .hepiq-section p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .store-buttons {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 12px;
+        }
+
+        .store-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            color: var(--text);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: var(--transition);
+            flex: 1;
+            max-width: 160px;
+            justify-content: center;
+            border: 2px solid transparent;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .store-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); }
+        .store-btn i { font-size: 1.2rem; }
+        .store-btn.google-play i { color: #00c4ff; }
+        .store-btn.google-play:hover { border-color: #00c4ff; }
+        .store-btn.app-store i { color: #000000; }
+        .store-btn.app-store:hover { border-color: #000000; }
+        .store-btn .btn-text { display: flex; flex-direction: column; align-items: flex-start; }
+        .store-btn .btn-text small { font-size: 0.6rem; color: var(--text-light); font-weight: 400; }
+        .store-btn .btn-text strong { font-size: 0.8rem; font-weight: 800; }
+
+        .hepiq-service-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3a8a;
+            text-decoration: none;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .hepiq-service-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+            background: white;
+        }
+
+        .hepiq-service-btn i { font-size: 1.2rem; color: #8b5cf6; }
+
+        .services-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+        .service-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateX(-8px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-light);
+        }
+
+        .service-card.soon { opacity: 0.55; cursor: not-allowed; }
+        .service-card.soon:hover { transform: none; border-color: transparent; }
+
+        .service-icon {
+            width: 55px; height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            transition: var(--transition);
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            color: white;
+        }
+
+        .service-card:hover .service-icon { transform: scale(1.15) rotate(5deg); }
+        .service-info { flex: 1; }
+        .service-info h3 { font-size: 1rem; font-weight: 800; margin-bottom: 3px; }
+        .service-info p { font-size: 0.8rem; color: var(--text-light); }
+
+        .badge-soon {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .badge-live {
+            background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+            color: #065f46;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        .badge-closed {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            color: #1e293b;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            border: 1px solid #64748b;
+        }
+
+        [data-theme="dark"] .badge-closed {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            color: #cbd5e1;
+            border-color: #475569;
+        }
+
+        .arrow-icon { color: var(--text-light); flex-shrink: 0; transition: var(--transition); }
+        .service-card:hover .arrow-icon { transform: translateX(-8px); color: var(--primary-light); }
+
+        .footer { text-align: center; margin-top: 30px; padding: 20px; color: var(--text-light); font-size: 0.8rem; }
+
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            z-index: 100;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #25d366;
+            color: white;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5);
+            animation: whatsappPulse 2s ease infinite;
+            transition: var(--transition);
+        }
+
+        .whatsapp-float:hover { transform: scale(1.15); box-shadow: 0 15px 40px rgba(37, 211, 102, 0.7); }
+
+        @keyframes whatsappPulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5); }
+            50% { box-shadow: 0 10px 50px rgba(37, 211, 102, 0.8); }
+        }
+
+        .page {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        [data-theme="dark"] .page { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .page-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow-hover);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            padding: 12px 22px;
+            background: var(--card-bg);
+            border-radius: 50px;
+            border: 2px solid var(--primary-light);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+        .page-header { text-align: center; margin-bottom: 25px; }
+        .page-header .page-icon { font-size: 3rem; display: block; margin-bottom: 15px; color: var(--primary-light); }
+        .page-header h2 { font-size: 1.3rem; font-weight: 900; color: var(--text); margin-bottom: 5px; }
+        .page-header p { font-size: 0.85rem; color: var(--text-light); }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.9rem; color: var(--text); }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            background: var(--card-bg);
+            color: var(--text);
+        }
+
+        .form-control:focus { border-color: var(--primary-light); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        select.form-control { cursor: pointer; }
+
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        input[type="file"].form-control { padding: 8px; cursor: pointer; }
+
+        input[type="file"].form-control::file-selector-button {
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+
+        input[type="file"].form-control::file-selector-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        #image-preview {
+            text-align: center;
+            padding: 10px;
+            background: var(--glass-bg);
+            border-radius: var(--radius-sm);
+            border: 2px dashed var(--primary-light);
+        }
+
+        #preview-img { max-width: 100%; border-radius: 10px; max-height: 200px; box-shadow: var(--shadow); }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .secondary-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+
+        .secondary-btn:hover { background: var(--glass-bg); border-color: var(--primary-light); }
+
+        .student-info { display: grid; gap: 10px; margin-bottom: 20px; }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: var(--glass-bg);
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .info-label { color: var(--text-light); font-weight: 600; font-size: 0.85rem; }
+        .info-value { color: var(--text); font-weight: 700; font-size: 0.9rem; }
+
+        .summary-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid var(--primary-light);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box h3 { font-size: 0.95rem; margin-bottom: 10px; color: var(--primary-light); }
+        .summary-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.85rem; }
+        .summary-row span:first-child { color: var(--text-light); }
+
+        #qr-reader { border-radius: 15px; overflow: hidden; margin-bottom: 15px; }
+        #qr-reader video { border-radius: 15px; }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .alert-info { background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid #3b82f6; }
+        .alert-error { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid #ef4444; }
+        .alert-warning { background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid #f59e0b; }
+
+        .success-msg {
+            text-align: center;
+            padding: 30px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10b981;
+            border-radius: var(--radius);
+        }
+
+        .success-msg i { font-size: 3.5rem; color: #10b981; margin-bottom: 15px; }
+        .success-msg h2 { color: #10b981; margin-bottom: 10px; }
+        .success-msg p { color: var(--text-light); line-height: 1.8; }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+            padding: 0 10px;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--glass-border);
+            z-index: 0;
+        }
+
+        .step-dot {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            transition: var(--transition);
+            color: var(--text-light);
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .step-dot.done { background: #10b981; border-color: #10b981; color: white; }
+
+        .my-req-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-bottom: 12px;
+            border-right: 4px solid var(--primary-light);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .my-req-card:hover { box-shadow: var(--shadow-hover); }
+
+        .my-req-card.pending { border-right-color: #f59e0b; }
+        .my-req-card.approved { border-right-color: #3b82f6; }
+        .my-req-card.ready { border-right-color: #10b981; }
+        .my-req-card.delivered { border-right-color: #94a3b8; }
+        .my-req-card.rejected { border-right-color: #ef4444; }
+
+        .my-req-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .my-req-service {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .my-req-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .my-req-badge.pending { background: rgba(245,158,11,0.15); color: #b45309; }
+        .my-req-badge.approved { background: rgba(59,130,246,0.15); color: #1d4ed8; }
+        .my-req-badge.ready { background: rgba(16,185,129,0.15); color: #047857; }
+        .my-req-badge.delivered { background: rgba(148,163,184,0.15); color: #475569; }
+        .my-req-badge.rejected { background: rgba(239,68,68,0.15); color: #b91c1c; }
+
+        [data-theme="dark"] .my-req-badge.pending { color: #fbbf24; }
+        [data-theme="dark"] .my-req-badge.approved { color: #60a5fa; }
+        [data-theme="dark"] .my-req-badge.ready { color: #34d399; }
+        [data-theme="dark"] .my-req-badge.delivered { color: #cbd5e1; }
+        [data-theme="dark"] .my-req-badge.rejected { color: #f87171; }
+
+        .my-req-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .my-req-info span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .my-req-note {
+            background: var(--glass-bg);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: var(--text);
+            margin-top: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .my-req-ready-banner {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-align: center;
+            animation: pulse 2s ease infinite;
+        }
+
+        .my-req-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .my-req-stat {
+            background: var(--glass-bg);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .my-req-stat .num {
+            font-size: 1.4rem;
+            font-weight: 900;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .my-req-stat .lbl {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .duplicate-warning {
+            background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1));
+            border: 2px solid #ef4444;
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .duplicate-warning h4 {
+            color: #dc2626;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .duplicate-warning p {
+            font-size: 0.82rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .documents-note {
+            background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08));
+            border: 2px solid #f59e0b;
+            border-right: 6px solid #ef4444;
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            direction: rtl;
+        }
+
+        .documents-note h4 {
+            color: #b45309;
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        [data-theme="dark"] .documents-note h4 { color: #fbbf24; }
+
+        .documents-note p {
+            color: var(--text);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .documents-note ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0;
+        }
+
+        .documents-note ul li {
+            color: var(--text);
+            font-size: 0.82rem;
+            padding: 6px 12px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+            border-right: 3px solid #f59e0b;
+        }
+
+        [data-theme="dark"] .documents-note ul li {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .email-delivered-card {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.10));
+            border: 2px solid #10b981;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .email-delivered-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .email-delivered-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-delivered-header i {
+            font-size: 1.5rem;
+            color: #10b981;
+        }
+
+        .email-delivered-header h3 {
+            font-size: 1rem;
+            color: #065f46;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        [data-theme="dark"] .email-delivered-header h3 { color: #34d399; }
+
+        .email-field {
+            background: rgba(255,255,255,0.85);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        [data-theme="dark"] .email-field {
+            background: rgba(15,23,42,0.6);
+            border-color: rgba(16,185,129,0.4);
+        }
+
+        .email-field-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .email-field-label {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .email-field-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #065f46;
+            word-break: break-all;
+            direction: ltr;
+            text-align: left;
+        }
+
+        [data-theme="dark"] .email-field-value { color: #6ee7b7; }
+
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #3b82f6;
+        }
+
+        .email-expiry-note {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(251,191,36,0.12);
+            border-radius: 8px;
+            border: 1px dashed #f59e0b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-expiry-note strong {
+            color: #b45309;
+        }
+
+        [data-theme="dark"] .email-expiry-note strong { color: #fbbf24; }
+
+        .hidden { display: none !important; }
+        .loading { text-align: center; padding: 20px; color: var(--text-light); }
+
+        @media (max-width: 400px) {
+            .social-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .social-card { padding: 12px 6px; }
+            .social-card i { font-size: 1.3rem; }
+            .social-card span { font-size: 0.65rem; }
+            .header h1 { font-size: 1.3rem; }
+            .service-card { padding: 15px; }
+            .service-icon { width: 45px; height: 45px; font-size: 1.2rem; }
+            .service-info h3 { font-size: 0.9rem; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 1.5rem; }
+            .profile-toggle { top: 15px; left: 15px; width: 45px; height: 45px; font-size: 1.1rem; }
+            .hepiq-logo { font-size: 1.4rem; }
+            .store-btn { padding: 8px 12px; }
+            .store-btn .btn-text small { font-size: 0.55rem; }
+            .store-btn .btn-text strong { font-size: 0.75rem; }
+            .hepiq-service-btn { font-size: 0.85rem; padding: 12px 15px; }
+            .my-req-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <!-- ✅ زر البروفايل (بدل زر الوضع الليلي) -->
+    <button class="profile-toggle" id="profileBtn" onclick="openProfile()">
+        <i class="fas fa-user"></i>
+    </button>
+
+    <a href="https://wa.me/9647818999997" target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <div class="main-container">
+
+        <div class="header">
+            <div class="logo-circle">
+                <i class="fas fa-university"></i>
+            </div>
+            <h1>جامعة الناجي</h1>
+            <p>بوابة الخدمات الإلكترونية</p>
+        </div>
+
+        <button class="my-requests-btn" onclick="openPage('page-my-requests')">
+            <i class="fas fa-clipboard-list"></i>
+            📋 طلباتي — تابع حالة طلباتك
+        </button>
+
+        <h2 class="section-title">تواصل معنا</h2>
+        <div class="social-grid">
+            <a href="https://alnaji-uni.edu.iq/" target="_blank" class="social-card website">
+                <i class="fas fa-globe"></i>
+                <span>الموقع الرسمي</span>
+            </a>
+            <a href="https://t.me/+Nh7fqNk9g3AzODAy" target="_blank" class="social-card telegram">
+                <i class="fab fa-telegram"></i>
+                <span>تيليگرام</span>
+            </a>
+            <a href="https://www.instagram.com/alnajiuniversity/" target="_blank" class="social-card instagram">
+                <i class="fab fa-instagram"></i>
+                <span>انستغرام</span>
+            </a>
+            <a href="https://www.facebook.com/ALNajiUniversity/" target="_blank" class="social-card facebook">
+                <i class="fab fa-facebook-f"></i>
+                <span>فيسبوك</span>
+            </a>
+            <a href="https://www.tiktok.com/@alnajiuniversity" target="_blank" class="social-card tiktok">
+                <i class="fab fa-tiktok"></i>
+                <span>تيك توك</span>
+            </a>
+        </div>
+
+        <div class="hepiq-section">
+            <div class="hepiq-logo">HEPIQ</div>
+            <p>حمل التطبيق الرسمي الآن</p>
+            
+            <div class="store-buttons">
+                <a href="https://play.google.com/store/apps/details?id=iq.gov.mohesr.ums&hl=ar" target="_blank" class="store-btn google-play">
+                    <i class="fab fa-google-play"></i>
+                    <span class="btn-text">
+                        <small>حمّله من</small>
+                        <strong>Google Play</strong>
+                    </span>
+                </a>
+                <a href="https://apps.apple.com/us/app/hepiq/id6737806530?l=ar" target="_blank" class="store-btn app-store">
+                    <i class="fab fa-apple"></i>
+                    <span class="btn-text">
+                        <small>حمّله من</small>
+                        <strong>App Store</strong>
+                    </span>
+                </a>
+            </div>
+
+            <button class="hepiq-service-btn" onclick="openServiceFromHepiq()">
+                <i class="fas fa-user-plus"></i>
+                طلب تسجيل حساب وتوثيق HEPIQ
+            </button>
+        </div>
+
+        <h2 class="section-title">الخدمات الإلكترونية</h2>
+        <div class="services-grid" id="services-list">
+            <div class="loading">⏳ جاري التحميل...</div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 جامعة الناجي - جميع الحقوق محفوظة</p>
+        </div>
+
+    </div>
+
+    <!-- ✅ صفحة: البروفايل -->
+    <div id="page-profile" class="page">
+        <div class="page-container">
+            <button class="back-btn" onclick="closePage('page-profile')">
+                <i class="fas fa-arrow-right"></i> رجوع
+            </button>
+
+            <div class="page-header">
+                <span class="page-icon"><i class="fas fa-user-circle"></i></span>
+                <h2>الملف الشخصي</h2>
+            </div>
+
+            <!-- ✅ زر الوضع الليلي/النهاري -->
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i> الوضع الليلي
+            </button>
+
+            <div id="profile-content"></div>
+        </div>
+    </div>
+
+    <!-- صفحة: طلباتي -->
+    <div id="page-my-requests" class="page">
+        <div class="page-container">
+            <button class="back-btn" onclick="closePage('page-my-requests')">
+                <i class="fas fa-arrow-right"></i> العودة للرئيسية
+            </button>
+
+            <div class="page-header">
+                <span class="page-icon">📋</span>
+                <h2>طلباتي</h2>
+                <p>أدخل رقم التسجيل لعرض طلباتك</p>
+            </div>
+
+            <div class="form-group">
+                <label>رقم التسجيل</label>
+                <input type="number" id="my-req-reg-id" class="form-control" 
+                       placeholder="مثال: 1001"
+                       onkeypress="if(event.key==='Enter') loadMyRequests()">
+            </div>
+
+            <button class="submit-btn" id="my-req-btn" onclick="loadMyRequests()">
+                <i class="fas fa-search"></i> عرض طلباتي
+            </button>
+
+            <div id="my-requests-result" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <!-- صفحة: النموذج -->
+    <div id="page-form" class="page">
+        <div class="page-container">
+            <button class="back-btn" onclick="closePage('page-form')">
+                <i class="fas fa-arrow-right"></i> العودة للخدمات
+            </button>
+
+            <div class="progress-bar">
+                <div class="step-dot active">1</div>
+                <div class="step-dot">2</div>
+                <div class="step-dot">3</div>
+            </div>
+
+            <div class="page-header">
+                <span class="page-icon">📝</span>
+                <h2 id="form-title">تقديم طلب</h2>
+                <p>قم بتعبئة البيانات المطلوبة</p>
+            </div>
+
+            <div id="form-fields"></div>
+
+            <button class="submit-btn" onclick="goToVerify()">
+                <i class="fas fa-arrow-left"></i> متابعة للتحقق
+            </button>
+        </div>
+    </div>
+
+    <!-- صفحة: التحقق -->
+    <div id="page-verify" class="page">
+        <div class="page-container">
+            <button class="back-btn" onclick="backToForm()">
+                <i class="fas fa-arrow-right"></i> رجوع
+            </button>
+
+            <div class="progress-bar">
+                <div class="step-dot done">✓</div>
+                <div class="step-dot active">2</div>
+                <div class="step-dot">3</div>
+            </div>
+
+            <div class="page-header">
+                <span class="page-icon">🔐</span>
+                <h2>التحقق من الهوية</h2>
+                <p>امسح QR Code في هويتك الجامعية</p>
+            </div>
+
+            <div class="summary-box">
+                <h3>📋 ملخص الطلب</h3>
+                <div class="summary-row">
+                    <span>الخدمة:</span>
+                    <span id="summary-service"></span>
+                </div>
+                <div id="summary-fields"></div>
+            </div>
+
+            <div id="qr-reader"></div>
+
+            <button class="submit-btn" id="btn-start-scan" onclick="startScanner()">
+                <i class="fas fa-camera"></i> بدء مسح الهوية
+            </button>
+            <button class="secondary-btn" onclick="showManualInput()">
+                <i class="fas fa-keyboard"></i> الدخول برقم التسجيل
+            </button>
+        </div>
+    </div>
+
+    <!-- صفحة: الدخول برقم التسجيل (بدل الإدخال اليدوي) -->
+    <div id="page-manual" class="page">
+        <div class="page-container">
+            <button class="back-btn" onclick="backToVerify()">
+                <i class="fas fa-arrow-right"></i> رجوع
+            </button>
+
+            <div class="progress-bar">
+                <div class="step-dot done">✓</div>
+                <div class="step-dot active">2</div>
+                <div class="step-dot">3</div>
+            </div>
+
+            <div class="page-header">
+                <span class="page-icon">🔢</span>
+                <h2>الدخول برقم التسجيل</h2>
+                <p>أدخل رقم التسجيل الخاص بك</p>
+            </div>
+
+            <div class="form-group">
+                <label>رقم التسجيل</label>
+                <input type="number" id="manual-reg-id" class="form-control" placeholder="مثال: 1001">
+            </div>
+
+            <button class="submit-btn" onclick="submitManualInput()">
+                <i class="fas fa-check"></i> تأكيد
+            </button>
+        </div>
+    </div>
+
+    <!-- صفحة: تأكيد البيانات -->
+    <div id="page-confirm" class="page">
+        <div class="page-container">
+            <div class="progress-bar">
+                <div class="step-dot done">✓</div>
+                <div class="step-dot done">✓</div>
+                <div class="step-dot active">3</div>
+            </div>
+
+            <div class="page-header">
+                <span class="page-icon">✅</span>
+                <h2>تأكيد بياناتك</h2>
+                <p>راجع بياناتك قبل الإرسال النهائي</p>
+            </div>
+
+            <div class="student-info" id="student-info"></div>
+
+            <button class="submit-btn" id="btn-final-submit" onclick="finalSubmit()">
+                <i class="fas fa-paper-plane"></i> إرسال الطلب النهائي
+            </button>
+            <button class="secondary-btn" onclick="location.reload()">
+                ← إلغاء
+            </button>
+        </div>
+    </div>
+
+    <!-- صفحة: نجاح -->
+    <div id="page-success" class="page">
+        <div class="page-container">
+            <div class="success-msg">
+                <i class="fas fa-check-circle"></i>
+                <h2>تم إرسال طلبك</h2>
+                <p>⏳ الطلب قيد المراجعة<br>سيتم إشعارك عند الجاهزية</p>
+                <p style="margin-top: 20px; font-weight: 800; color: #10b981;" id="success-request-id"></p>
+                <button class="submit-btn" style="margin-top: 25px;" onclick="location.reload()">
+                    <i class="fas fa-home"></i> طلب خدمة أخرى
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// إعدادات Supabase
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = "https://ewivzdrrujuwhkuqqgei.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3aXZ6ZHJydWp1d2hrdXFxZ2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1OTMwNDQsImV4cCI6MjEwNTE2OTA0NH0.ng8N-08Pl2SOr42Dw01fLSG6n8C17BNTG5XDVPdisM8";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════
+// المتغيرات
+// ═══════════════════════════════════════════════════════
+let currentService = null;
+let currentFormData = {};
+let currentStudent = null;
+let qrScanner = null;
+let servicesData = [];
+let currentImageFile = null;
+let savedStudent = null;
+
+const DYNAMIC_SERVICE = 'S010';
+const EMAIL_EXPIRY_DAYS = 14;
+
+// ═══════════════════════════════════════════════════════
+// خرائط الحالة
+// ═══════════════════════════════════════════════════════
+const STATUS_INFO = {
+    'pending':   { text: 'قيد المراجعة',   color: '#f59e0b', icon: '⏳' },
+    'approved':  { text: 'موافق عليه',     color: '#3b82f6', icon: '✅' },
+    'ready':     { text: 'جاهز للاستلام',  color: '#10b981', icon: '📦' },
+    'delivered': { text: 'تم التسليم',     color: '#94a3b8', icon: '🎉' },
+    'rejected':  { text: 'مرفوض',          color: '#ef4444', icon: '❌' },
+};
+
+const SERVICE_ICONS_MAP = {
+    "S001": "📄", "S002": "📧", "S003": "🎓", "S004": "🪪",
+    "S005": "⏸️", "S006": "🏥", "S007": "🔄", "S008": "📱",
+    "S009": "⏰", "S010": "🏛️", "S012": "🎓", "S013": "🏥",
+    "S014": "📧",
+};
+
+// ═══════════════════════════════════════════════════════
+// أدوات البريد الجامعي
+// ═══════════════════════════════════════════════════════
+function isEmailService(serviceName) {
+    if (!serviceName) return false;
+    return serviceName.includes('بريد') || 
+           serviceName.includes('إيميل') || 
+           serviceName.includes('ايميل') ||
+           serviceName.includes('email');
+}
+
+function isExpiredEmailRequest(req) {
+    if (req.status !== 'delivered') return false;
+    if (!isEmailService(req.service_name)) return false;
+    const ts = req.processed_at || req.timestamp;
+    if (!ts) return false;
+    try {
+        const dt = new Date(ts);
+        const now = new Date();
+        const days = (now - dt) / (1000 * 60 * 60 * 24);
+        return days > EMAIL_EXPIRY_DAYS;
+    } catch(e) {
+        return false;
+    }
+}
+
+function getDaysRemaining(req) {
+    const ts = req.processed_at || req.timestamp;
+    if (!ts) return EMAIL_EXPIRY_DAYS;
+    try {
+        const dt = new Date(ts);
+        const now = new Date();
+        const days = (now - dt) / (1000 * 60 * 60 * 24);
+        return Math.max(0, EMAIL_EXPIRY_DAYS - Math.floor(days));
+    } catch(e) {
+        return EMAIL_EXPIRY_DAYS;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// نسخ للحافظة
+// ═══════════════════════════════════════════════════════
+function copyToClipboard(text, btnElement) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        const original = btnElement.innerHTML;
+        btnElement.innerHTML = '✓ تم النسخ';
+        btnElement.classList.add('copied');
+        setTimeout(() => {
+            btnElement.innerHTML = original;
+            btnElement.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        alert('تعذّر النسخ: ' + err);
+    });
+}
+
+// ═══════════════════════════════════════════════════════
+// التحقق من وجود طلب سابق
+// ═══════════════════════════════════════════════════════
+async function checkDuplicateRequest(regId, serviceId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp, service_name, processed_at")
+            .eq("reg_id", regId)
+            .eq("service_id", serviceId)
+            .in("status", ["pending", "approved", "ready", "delivered"]);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            for (const req of data) {
+                if (isExpiredEmailRequest(req)) continue;
+                if (req.status === 'delivered' && isEmailService(req.service_name)) {
+                    continue;
+                }
+                return req;
+            }
+        }
+        return null;
+    } catch (err) {
+        console.error("خطأ التحقق:", err);
+        return null;
+    }
+}
+
+async function checkDuplicateByPhone(phone, serviceId) {
+    if (!phone) return null;
+    try {
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp, form_data")
+            .eq("service_id", serviceId)
+            .in("status", ["pending", "approved", "ready"]);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            for (const req of data) {
+                try {
+                    const fd = JSON.parse(req.form_data || '{}');
+                    if (fd['رقم الهاتف'] && fd['رقم الهاتف'].includes(phone)) {
+                        return req;
+                    }
+                } catch(e) {}
+            }
+        }
+        return null;
+    } catch (err) {
+        console.error("خطأ التحقق بالهاتف:", err);
+        return null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// جزيئات الخلفية
+// ═══════════════════════════════════════════════════════
+function createParticles() {
+    const container = document.getElementById('particlesContainer');
+    const particleCount = 25;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        const size = Math.random() * 8 + 3;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        
+        container.appendChild(particle);
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// الوضع الليلي/النهاري — داخل صفحة البروفايل
+// ═══════════════════════════════════════════════════════
+function toggleTheme() {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const currentTheme = html.getAttribute('data-theme');
+    
+    if (currentTheme === 'dark') {
+        html.removeAttribute('data-theme');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i> الوضع الليلي';
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i> الوضع النهاري';
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
+    
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i> الوضع النهاري';
+    } else {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i> الوضع الليلي';
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// إدارة الصفحات
+// ═══════════════════════════════════════════════════════
+function openPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    
+    // ✅ تعبئة تلقائية لصفحة طلباتي إذا كان هناك بروفايل محفوظ
+    if (pageId === 'page-my-requests') {
+        const savedId = getSavedRegId();
+        if (savedId) {
+            const input = document.getElementById('my-req-reg-id');
+            if (input && !input.value) input.value = savedId;
+        }
+    }
+}
+
+function closePage(pageId) {
+    document.getElementById(pageId).classList.remove('active');
+    document.body.style.overflow = 'auto';
+    stopScanner();
+}
+// ═══════════════════════════════════════════════════════
+// ✅ الملف الشخصي
+// ═══════════════════════════════════════════════════════
+function getSavedRegId() {
+    return parseInt(localStorage.getItem('saved_reg_id')) || null;
+}
+
+function updateProfileButton() {
+    const btn = document.getElementById('profileBtn');
+    if (!btn) return;
+    btn.classList.toggle('has-profile', !!getSavedRegId());
+}
+
+function openProfile() {
+    const regId = getSavedRegId();
+    if (regId) loadProfileStudent(regId);
+    else renderProfileForm();
+    openPage('page-profile');
+}
+
+function renderProfileForm(errorMsg = '') {
+    document.getElementById('profile-content').innerHTML = `
+        <div class="alert alert-info" style="margin-bottom:15px;">
+            💡 أدخل رقم تسجيلك مرة واحدة، وسيُستخدم تلقائياً في كل طلب.
+        </div>
+        ${errorMsg ? `<div class="alert alert-error" style="margin-bottom:15px;">${errorMsg}</div>` : ''}
+        <div class="form-group">
+            <label>رقم التسجيل</label>
+            <input type="number" class="form-control" id="profile-reg-id" placeholder="أدخل رقم التسجيل">
+        </div>
+        <button class="submit-btn" onclick="saveProfile()">
+            <i class="fas fa-save"></i> حفظ الملف الشخصي
+        </button>
+    `;
+}
+
+async function saveProfile() {
+    const regId = parseInt(document.getElementById('profile-reg-id').value);
+    if (isNaN(regId)) { alert('⚠️ الرجاء إدخال رقم التسجيل'); return; }
+
+    const btn = document.querySelector('#page-profile .submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from("students").select("*").eq("reg_id", regId).single();
+        if (error || !data) { renderProfileForm('❌ رقم التسجيل غير موجود'); return; }
+
+        localStorage.setItem('saved_reg_id', regId);
+        localStorage.setItem('saved_student_name', data.name || '');
+        savedStudent = data;
+        updateProfileButton();
+        loadProfileStudent(regId);
+    } catch (err) {
+        renderProfileForm('❌ خطأ في الاتصال');
+    }
+}
+
+async function loadProfileStudent(regId) {
+    document.getElementById('profile-content').innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+    try {
+        const { data, error } = await supabaseClient
+            .from("students").select("*").eq("reg_id", regId).single();
+
+        if (error || !data) {
+            localStorage.removeItem('saved_reg_id');
+            localStorage.removeItem('saved_student_name');
+            savedStudent = null;
+            updateProfileButton();
+            renderProfileForm('❌ لم يتم العثور على بياناتك، أدخل رقم التسجيل مجدداً');
+            return;
+        }
+
+        savedStudent = data;
+        updateProfileButton();
+
+        document.getElementById('profile-content').innerHTML = `
+            <div class="info-row"><span class="info-label">رقم التسجيل</span><span class="info-value">${data.reg_id}</span></div>
+            <div class="info-row"><span class="info-label">الاسم</span><span class="info-value">${data.name}</span></div>
+            <div class="info-row"><span class="info-label">القسم</span><span class="info-value">${data.dept || '-'}</span></div>
+            <div class="info-row"><span class="info-label">الكلية</span><span class="info-value">${data.college || '-'}</span></div>
+            <div class="info-row"><span class="info-label">المرحلة</span><span class="info-value">${data.stage || '-'}</span></div>
+            <div class="info-row"><span class="info-label">نوع الدراسة</span><span class="info-value">${data.study_type || '-'}</span></div>
+            <button class="secondary-btn" style="margin-top:15px;" onclick="clearProfile()">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج / تغيير الحساب
+            </button>
+        `;
+    } catch (err) {
+        renderProfileForm('❌ خطأ في الاتصال');
+    }
+}
+
+function clearProfile() {
+    if (!confirm('هل تريد حذف بيانات الملف الشخصي؟')) return;
+    localStorage.removeItem('saved_reg_id');
+    localStorage.removeItem('saved_student_name');
+    savedStudent = null;
+    updateProfileButton();
+    renderProfileForm();
+}
+
+// ═══════════════════════════════════════════════════════
+// طلباتي
+// ═══════════════════════════════════════════════════════
+async function loadMyRequests() {
+    const regIdInput = document.getElementById('my-req-reg-id');
+    const result = document.getElementById('my-requests-result');
+    const btn = document.getElementById('my-req-btn');
+    const regId = parseInt(regIdInput.value);
+
+    if (isNaN(regId)) {
+        result.innerHTML = '<div class="alert alert-error">❌ الرجاء إدخال رقم التسجيل</div>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري البحث...';
+    result.innerHTML = '<div class="loading">⏳ جاري جلب طلباتك...</div>';
+
+    try {
+        const { data: student, error: sErr } = await supabaseClient
+            .from("students")
+            .select("reg_id, name, dept, college, stage, study_type")
+            .eq("reg_id", regId)
+            .single();
+
+        if (sErr || !student) {
+            result.innerHTML = 
+                '<div class="alert alert-error">❌ رقم التسجيل غير موجود</div>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
+            return;
+        }
+
+        const { data: requests, error: rErr } = await supabaseClient
+            .from("requests")
+            .select("*")
+            .eq("reg_id", regId)
+            .order("timestamp", { ascending: false });
+
+        if (rErr) throw rErr;
+
+        const visibleRequests = (requests || []).filter(r => !isExpiredEmailRequest(r));
+
+        if (!visibleRequests || visibleRequests.length === 0) {
+            result.innerHTML = `
+                <div class="info-row" style="margin-bottom:15px;">
+                    <span class="info-label">👤 الطالب</span>
+                    <span class="info-value">${student.name}</span>
+                </div>
+                <div class="alert alert-info">
+                    📭 لم تقدم أي طلب حتى الآن
+                </div>
+            `;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
+            return;
+        }
+
+        const stats = {
+            total: visibleRequests.length,
+            pending: visibleRequests.filter(r => r.status === 'pending').length,
+            ready: visibleRequests.filter(r => r.status === 'ready').length,
+            delivered: visibleRequests.filter(r => r.status === 'delivered').length,
+        };
+
+        let html = `
+            <div class="info-row" style="margin-bottom:15px;">
+                <span class="info-label">👤 الطالب</span>
+                <span class="info-value">${student.name}</span>
+            </div>
+
+            <div class="my-req-stats">
+                <div class="my-req-stat">
+                    <span class="num" style="color:#64748b;">${stats.total}</span>
+                    <span class="lbl">الإجمالي</span>
+                </div>
+                <div class="my-req-stat">
+                    <span class="num" style="color:#f59e0b;">${stats.pending}</span>
+                    <span class="lbl">قيد المراجعة</span>
+                </div>
+                <div class="my-req-stat">
+                    <span class="num" style="color:#10b981;">${stats.ready}</span>
+                    <span class="lbl">جاهز</span>
+                </div>
+                <div class="my-req-stat">
+                    <span class="num" style="color:#94a3b8;">${stats.delivered}</span>
+                    <span class="lbl">مُسلَّم</span>
+                </div>
+            </div>
+
+            <h3 style="font-size:0.95rem; margin-bottom:12px; color:var(--text-light);">
+                📋 سجل الطلبات
+            </h3>
+        `;
+
+        visibleRequests.forEach(req => {
+            html += renderMyRequestCard(req);
+        });
+
+        result.innerHTML = html;
+
+    } catch (err) {
+        console.error("خطأ:", err);
+        result.innerHTML = '<div class="alert alert-error">❌ خطأ في الاتصال</div>';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
+}
+
+function renderMyRequestCard(req) {
+    const st = STATUS_INFO[req.status] || STATUS_INFO['pending'];
+    const icon = SERVICE_ICONS_MAP[req.service_id] || '📋';
+
+    let dateStr = '';
+    try {
+        const dt = new Date(req.timestamp);
+        const d = String(dt.getDate()).padStart(2, '0');
+        const m = String(dt.getMonth() + 1).padStart(2, '0');
+        const y = dt.getFullYear();
+        const hh = String(dt.getHours()).padStart(2, '0');
+        const mm = String(dt.getMinutes()).padStart(2, '0');
+        dateStr = `${y}/${m}/${d} — ${hh}:${mm}`;
+    } catch(e) {
+        dateStr = req.timestamp || '';
+    }
+
+    if (isEmailService(req.service_name) && req.status === 'delivered') {
+        return renderEmailDeliveredCard(req, dateStr);
+    }
+
+    let html = `<div class="my-req-card ${req.status}">`;
+
+    if (req.status === 'ready') {
+        html += `
+            <div class="my-req-ready-banner">
+                📦 طلبك جاهز! — يُرجى مراجعة قسم التسجيل للاستلام
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="my-req-head">
+            <div class="my-req-service">${icon} ${req.service_name || ''}</div>
+            <div class="my-req-badge ${req.status}">
+                ${st.icon} ${st.text}
+            </div>
+        </div>
+    `;
+
+    html += `
+        <div class="my-req-info">
+            <span>🕐 ${dateStr}</span>
+            <span>🎫 ${req.request_id || ''}</span>
+        </div>
+    `;
+
+    if (req.employee_note) {
+        html += `
+            <div class="my-req-note">
+                💬 <strong>ملاحظة:</strong> ${req.employee_note}
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
+function renderEmailDeliveredCard(req, dateStr) {
+    let email = '';
+    let password = '';
+    try {
+        const fd = JSON.parse(req.form_data || '{}');
+        email = fd['_البريد_جامعي'] || fd['_البريد_الجامعي'] || fd['البريد الجامعي'] || '';
+        password = fd['_كلمة_المرور'] || fd['كلمة المرور'] || '';
+    } catch(e) {
+        console.error('خطأ قراءة البريد:', e);
+    }
+
+    const daysLeft = getDaysRemaining(req);
+    const reqIdSafe = (req.request_id || '').replace(/[^a-zA-Z0-9]/g, '');
+
+    let html = `
+        <div class="email-delivered-card">
+            <div class="email-delivered-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>🎉 تم تسليم بريدك الجامعي</h3>
+            </div>
+    `;
+
+    if (email) {
+        html += `
+            <div class="email-field">
+                <div class="email-field-info">
+                    <span class="email-field-label">📧 البريد الجامعي</span>
+                    <span class="email-field-value" id="email-${reqIdSafe}">${email}</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('${email.replace(/'/g, "\\'")}', this)">
+                    <i class="fas fa-copy"></i> نسخ
+                </button>
+            </div>
+        `;
+    }
+
+    if (password) {
+        html += `
+            <div class="email-field">
+                <div class="email-field-info">
+                    <span class="email-field-label">🔑 كلمة المرور</span>
+                    <span class="email-field-value" id="pwd-${reqIdSafe}">${password}</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('${password.replace(/'/g, "\\'")}', this)">
+                    <i class="fas fa-copy"></i> نسخ
+                </button>
+            </div>
+        `;
+    }
+
+    if (!email && !password) {
+        html += `
+            <div class="alert alert-warning">
+                ⏳ تم التسليم لكن البيانات لم تُسجل بعد — راجع الموظف
+            </div>
+        `;
+    }
+
+    html += `
+            <div class="email-expiry-note">
+                ⏰ يبقى هذا الطلب ظاهراً لمدة <strong>${daysLeft} يوم</strong> ثم يُحذف تلقائياً
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// دوال الصور
+// ═══════════════════════════════════════════════════════
+function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert("⚠️ الصورة كبيرة جداً. الحد الأقصى 5 ميجا");
+        event.target.value = "";
+        return;
+    }
+    
+    currentImageFile = file;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('image-preview');
+        const img = document.getElementById('preview-img');
+        img.src = e.target.result;
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+async function compressImage(file, maxWidth = 1200, quality = 0.7) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+            };
+        };
+    });
+}
+
+async function uploadImage(file, requestId) {
+    try {
+        const compressed = await compressImage(file);
+        const fileName = `${requestId}_${Date.now()}.jpg`;
+        
+        const { data, error } = await supabaseClient.storage
+            .from('request-images')
+            .upload(fileName, compressed, {
+                contentType: 'image/jpeg',
+                upsert: false
+            });
+        
+        if (error) throw error;
+        
+        const { data: urlData } = supabaseClient.storage
+            .from('request-images')
+            .getPublicUrl(fileName);
+        
+        return {
+            url: urlData.publicUrl,
+            name: fileName
+        };
+    } catch (err) {
+        console.error("خطأ رفع الصورة:", err);
+        return null;
+    }
+}
+// ═══════════════════════════════════════════════════════
+// تحميل الخدمات
+// ═══════════════════════════════════════════════════════
+async function loadServices() {
+    const container = document.getElementById('services-list');
+    container.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from("services")
+            .select("*")
+            .order("sort_order");
+        
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">لا توجد خدمات متاحة حالياً</div>';
+            return;
+        }
+        
+        servicesData = data;
+        
+        container.innerHTML = data.map((s, index) => {
+            const isLive = s.status === 'live';
+
+            const isClosed = s.service_name && s.service_name.includes('استضافة');
+            const isActive = isLive && !isClosed;
+
+            let badge;
+            if (isClosed) {
+                badge = '<span class="badge-closed">🔒 مغلقة</span>';
+            } else if (isLive) {
+                badge = '<span class="badge-live">متاح الآن</span>';
+            } else {
+                badge = '<span class="badge-soon">قريباً</span>';
+            }
+
+            const clickAttr = isActive ? `onclick="handleServiceClick(${index})"` : '';
+
+            return `
+                <div class="service-card ${!isActive ? 'soon' : ''}" ${clickAttr}>
+                    <div class="service-icon">
+                        <i class="fas fa-${s.icon || 'file'}"></i>
+                    </div>
+                    <div class="service-info">
+                        <h3>${s.service_name}</h3>
+                        <p>${s.Description || s.description || ''}</p>
+                    </div>
+                    ${badge}
+                    ${isActive ? '<i class="fas fa-chevron-left arrow-icon"></i>' : ''}
+                </div>
+            `;
+        }).join('');
+        
+    } catch (err) {
+        console.error("خطأ:", err);
+        container.innerHTML = '<div class="alert alert-error">❌ خطأ في تحميل الخدمات</div>';
+    }
+}
+
+function handleServiceClick(index) {
+    const s = servicesData[index];
+    if (!s || s.status !== 'live') return;
+    selectService(s.service_id, s.service_name, s.form_fields || "[]");
+}
+
+function openServiceFromHepiq() {
+    const s = servicesData.find(x => x.service_id === "S008");
+    if (!s) {
+        alert("الخدمة غير متاحة حالياً");
+        return;
+    }
+    selectService(s.service_id, s.service_name, s.form_fields || "[]");
+}
+
+// ═══════════════════════════════════════════════════════
+// اختيار خدمة
+// ═══════════════════════════════════════════════════════
+function selectService(serviceId, serviceName, formFields) {
+    let fields = [];
+    try {
+        if (Array.isArray(formFields)) {
+            fields = formFields;
+        } else {
+            fields = JSON.parse(formFields || "[]");
+        }
+    } catch(e) {
+        console.error("خطأ في JSON:", e, formFields);
+        fields = [];
+    }
+
+    const nm = serviceName || '';
+
+    if (nm.includes('استمرار') || nm.includes('مباشرة')) {
+        fields = fields.filter(f => {
+            const lower = String(f).toLowerCase();
+            return !lower.includes('سنة') &&
+                   !lower.includes('العام') &&
+                   !lower.includes('academic') &&
+                   !lower.includes('السنة الدراسية') &&
+                   !lower.includes('العام الدراسي');
+        });
+
+        const hasImage = fields.some(f => String(f).startsWith('image:'));
+        if (!hasImage) {
+            fields = [...fields, 'image:صورة الطالب'];
+        }
+    }
+
+    if (nm.includes('مراجعة') || nm.includes('إحالة') ||
+        nm.includes('مستشفى') || nm.includes('صحي')) {
+        fields = ['العمر', 'المركز الصحي المحال اليه'];
+    }
+
+    if (isEmailService(nm)) {
+        fields = [];
+    }
+
+    if (nm.includes('تقاعد')) {
+        const hasEntityField = fields.some(f => f.includes('الجهة') || f.includes('الهيئة'));
+        if (!hasEntityField) {
+            fields = [...fields, 'الجهة / الهيئة'];
+        }
+    }
+
+    currentService = {
+        id: serviceId,
+        name: serviceName,
+        fields: fields
+    };
+
+    currentFormData = {};
+    currentImageFile = null;
+
+    document.getElementById('form-title').textContent = serviceName;
+
+    const container = document.getElementById('form-fields');
+
+    let documentsNoteHtml = '';
+    if (nm.includes('تقاعد')) {
+        documentsNoteHtml = `
+            <div class="documents-note">
+                <h4>📌 يرجى جلب المستمسكات المطلوبة إلى قسم التسجيل في الجامعة</h4>
+                <ul>
+                    <li>🪪 البطاقة الموحدة للطالب + الأم</li>
+                    <li>📋 هوية التقاعد</li>
+                    <li>📷 صورة الطالب</li>
+                </ul>
+            </div>
+        `;
+    }
+
+    if (isEmailService(nm)) {
+        documentsNoteHtml = `
+            <div class="documents-note" style="border-color:#3b82f6; border-right-color:#2563eb; background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(139,92,246,0.08));">
+                <h4 style="color:#1d4ed8;">📧 طلب البريد الجامعي</h4>
+                <p>سيتم إنشاء بريدك الجامعي وإرساله إليك بعد مراجعة طلبك.</p>
+                <ul>
+                    <li>✅ تأكد من رقم التسجيل قبل المتابعة</li>
+                    <li>📩 سيظهر البريد وكلمة المرور في "طلباتي" عند التسليم</li>
+                </ul>
+            </div>
+        `;
+    }
+
+    if (fields.length === 0) {
+        container.innerHTML = documentsNoteHtml +
+            '<div class="alert alert-info">اضغط "متابعة للتحقق" للمتابعة</div>';
+    } else {
+        container.innerHTML = documentsNoteHtml + fields.map(f => {
+            if (f.startsWith('select:')) {
+                const parts = f.replace('select:', '').split('|');
+                const label = parts[0];
+                const options = parts.slice(1);
+                return `
+                    <div class="form-group">
+                        <label>${label}</label>
+                        <select class="form-control" data-field="${f}"
+                                onchange="onSelectChange(event)">
+                            <option value="">— اختر —</option>
+                            ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+            if (f.startsWith('image:')) {
+                const label = f.replace('image:', '');
+                return `
+                    <div class="form-group">
+                        <label>📷 ${label}</label>
+                        <input type="file" class="form-control" accept="image/*"
+                               data-field="${f}" data-type="image"
+                               onchange="handleImageSelect(event)">
+                        <div id="image-preview" style="margin-top:10px; display:none;">
+                            <img id="preview-img">
+                        </div>
+                    </div>
+                `;
+            }
+            if (f.startsWith('notes:')) {
+                const label = f.replace('notes:', '');
+                return `
+                    <div class="form-group">
+                        <label>📝 ${label} <span style="color:var(--text-light); font-size:0.8rem;">(اختياري)</span></label>
+                        <textarea class="form-control" data-field="${f}" rows="3"
+                                  placeholder="اكتب أي ملاحظات إضافية..."></textarea>
+                    </div>
+                `;
+            }
+            return `
+                <div class="form-group">
+                    <label>${f}</label>
+                    <input type="text" class="form-control" data-field="${f}"
+                           placeholder="أدخل ${f}">
+                </div>
+            `;
+        }).join('');
+    }
+
+    if (serviceId === DYNAMIC_SERVICE) {
+        setupDynamicService();
+    }
+
+    const submitBtn = document.querySelector('#page-form .submit-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
+    }
+
+    openPage('page-form');
+}
+
+function setupDynamicService() {
+    const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
+    const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
+    
+    if (nameField) nameField.closest('.form-group').style.display = 'none';
+    if (phoneField) phoneField.closest('.form-group').style.display = 'none';
+}
+
+function onSelectChange(event) {
+    if (!currentService || currentService.id !== DYNAMIC_SERVICE) return;
+    
+    const val = event.target.value;
+    const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
+    const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
+    
+    const showExtra = (val === 'قبول جديد');
+    
+    if (nameField) nameField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
+    if (phoneField) phoneField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
+    
+    const submitBtn = document.querySelector('#page-form .submit-btn');
+    if (submitBtn) {
+        if (showExtra) {
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+        } else {
+            submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// المتابعة للتحقق
+// ═══════════════════════════════════════════════════════
+function goToVerify() {
+    currentFormData = {};
+    if (currentService.fields.length > 0) {
+        for (const f of currentService.fields) {
+            const input = document.querySelector(`[data-field="${f}"]`);
+            
+            if (f.startsWith('select:')) {
+                if (!input || !input.value) {
+                    alert(`⚠️ الرجاء اختيار: ${f.replace('select:','').split('|')[0]}`);
+                    return;
+                }
+                currentFormData[f] = input.value;
+                continue;
+            }
+            
+            if (f.startsWith('image:')) {
+                if (!currentImageFile) {
+                    alert(`⚠️ الرجاء رفع ${f.replace('image:','')}`);
+                    return;
+                }
+                currentFormData[f] = '[صورة مرفوعة]';
+                continue;
+            }
+            
+            currentFormData[f] = input ? input.value.trim() : "";
+        }
+    }
+    
+    if (currentService.id === DYNAMIC_SERVICE) {
+        const selKey = currentService.fields.find(f => f.startsWith('select:'));
+        const type = currentFormData[selKey];
+        
+        if (type === 'قبول جديد') {
+            const required = ['الاسم الرباعي', 'رقم الهاتف', 'موضوع الطلب', 'تفاصيل الطلب'];
+            for (const f of required) {
+                if (!currentFormData[f] || !currentFormData[f].trim()) {
+                    alert(`⚠️ الرجاء إدخال: ${f}`);
+                    return;
+                }
+            }
+            submitVisitorRequest();
+            return;
+        }
+        
+        if (type === 'طالب منتسب') {
+            const required = ['موضوع الطلب', 'تفاصيل الطلب'];
+            for (const f of required) {
+                if (!currentFormData[f] || !currentFormData[f].trim()) {
+                    alert(`⚠️ الرجاء إدخال: ${f}`);
+                    return;
+                }
+            }
+            delete currentFormData['الاسم الرباعي'];
+            delete currentFormData['رقم الهاتف'];
+        }
+    }
+    
+    document.getElementById('summary-service').textContent = currentService.name;
+    
+    let fieldsHtml = '';
+    for (const [key, value] of Object.entries(currentFormData)) {
+        const displayKey = key
+            .replace('image:', '📷 ')
+            .replace('notes:', '📝 ')
+            .replace('select:', '');
+        fieldsHtml += `
+            <div class="summary-row">
+                <span>${displayKey}:</span>
+                <span>${value || '-'}</span>
+            </div>
+        `;
+    }
+    document.getElementById('summary-fields').innerHTML = fieldsHtml;
+    
+    // ✅ إذا يوجد بروفايل محفوظ → تخطّي صفحة QR/الإدخال وتحقق مباشرة
+    const savedId = getSavedRegId();
+    if (savedId) {
+        verifyStudent(savedId);
+        return;
+    }
+    
+    openPage('page-verify');
+}
+
+function backToForm() {
+    stopScanner();
+    openPage('page-form');
+}
+
+function backToVerify() {
+    openPage('page-verify');
+}
+
+// ═══════════════════════════════════════════════════════
+// QR Scanner
+// ═══════════════════════════════════════════════════════
+async function startScanner() {
+    const btn = document.getElementById('btn-start-scan');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التشغيل...';
+    
+    try {
+        qrScanner = new Html5Qrcode("qr-reader");
+        
+        await qrScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            onScanSuccess,
+            () => {}
+        );
+        
+        btn.innerHTML = '<i class="fas fa-stop"></i> إيقاف المسح';
+        btn.disabled = false;
+        btn.onclick = stopScanner;
+        
+    } catch (err) {
+        alert("خطأ في الكاميرا: " + err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-camera"></i> بدء مسح الهوية';
+    }
+}
+
+async function stopScanner() {
+    if (qrScanner) {
+        try { 
+            await qrScanner.stop(); 
+            await qrScanner.clear();
+        } catch(e) {}
+        qrScanner = null;
+    }
+    const btn = document.getElementById('btn-start-scan');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-camera"></i> بدء مسح الهوية';
+        btn.onclick = startScanner;
+        btn.disabled = false;
+    }
+}
+
+async function onScanSuccess(decodedText) {
+    if (qrScanner) {
+        try { 
+            await qrScanner.stop(); 
+            await qrScanner.clear();
+        } catch(e) {}
+        qrScanner = null;
+    }
+    
+    const regId = parseInt(decodedText.trim());
+    
+    if (isNaN(regId)) {
+        alert("QR Code غير صالح");
+        return;
+    }
+    
+    await verifyStudent(regId);
+}
+
+// ═══════════════════════════════════════════════════════
+// الدخول برقم التسجيل
+// ═══════════════════════════════════════════════════════
+function showManualInput() {
+    stopScanner();
+    openPage('page-manual');
+    setTimeout(() => {
+        const input = document.getElementById('manual-reg-id');
+        if (input) input.focus();
+    }, 300);
+}
+
+async function submitManualInput() {
+    const regId = parseInt(document.getElementById('manual-reg-id').value);
+    
+    if (isNaN(regId)) {
+        alert("الرجاء إدخال رقم التسجيل");
+        return;
+    }
+    
+    await verifyStudent(regId);
+}
+
+// ═══════════════════════════════════════════════════════
+// التحقق من الطالب
+// ═══════════════════════════════════════════════════════
+async function verifyStudent(regId) {
+    openPage('page-confirm');
+    document.getElementById('student-info').innerHTML = '<div class="loading">⏳ جاري التحقق...</div>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from("students")
+            .select("*")
+            .eq("reg_id", regId)
+            .single();
+        
+        if (error || !data) {
+            document.getElementById('student-info').innerHTML = 
+                '<div class="alert alert-error">❌ الطالب غير موجود. تأكد من رقم التسجيل.</div>' +
+                '<button class="secondary-btn" onclick="location.reload()">🔄 حاول مرة أخرى</button>';
+            return;
+        }
+        
+        currentStudent = data;
+        
+        const duplicate = await checkDuplicateRequest(data.reg_id, currentService.id);
+        
+        let warningHtml = '';
+        let blockSubmit = false;
+        
+        if (duplicate) {
+            const statusMap = {
+                'pending': '⏳ قيد المراجعة',
+                'approved': '✅ موافق عليه',
+                'ready': '📦 جاهز للاستلام'
+            };
+            const statusTxt = statusMap[duplicate.status] || duplicate.status;
+            
+            warningHtml = `
+                <div class="duplicate-warning">
+                    <h4>⚠️ لديك طلب سابق على هذه الخدمة</h4>
+                    <p>
+                        <strong>رقم الطلب:</strong> ${duplicate.request_id}<br>
+                        <strong>الحالة:</strong> ${statusTxt}<br>
+                        <span style="color:#64748b; font-size:0.8rem;">
+                            يمكنك تقديم طلب جديد بعد الانتهاء من الطلب الحالي.
+                        </span>
+                    </p>
+                </div>
+            `;
+            blockSubmit = true;
+        }
+        
+        document.getElementById('student-info').innerHTML = `
+            <div class="info-row">
+                <span class="info-label">رقم التسجيل</span>
+                <span class="info-value">${data.reg_id}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">الاسم</span>
+                <span class="info-value">${data.name}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">القسم</span>
+                <span class="info-value">${data.dept || '-'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">الكلية</span>
+                <span class="info-value">${data.college || '-'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">المرحلة</span>
+                <span class="info-value">${data.stage || '-'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">نوع الدراسة</span>
+                <span class="info-value">${data.study_type || '-'}</span>
+            </div>
+            ${warningHtml}
+        `;
+        
+        const submitBtn = document.getElementById('btn-final-submit');
+        if (blockSubmit) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '🔒 لديك طلب سابق على هذه الخدمة';
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+        
+    } catch (err) {
+        console.error("خطأ:", err);
+        document.getElementById('student-info').innerHTML = 
+            '<div class="alert alert-error">❌ خطأ في الاتصال</div>' +
+            '<button class="secondary-btn" onclick="location.reload()">🔄 حاول مرة أخرى</button>';
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// الإرسال النهائي
+// ═══════════════════════════════════════════════════════
+async function finalSubmit() {
+    const btn = document.getElementById('btn-final-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+    
+    try {
+        const requestId = "REQ-" + Date.now().toString().slice(-8);
+        
+        const dup = await checkDuplicateRequest(currentStudent.reg_id, currentService.id);
+        if (dup) {
+            alert("⚠️ لديك طلب سابق على هذه الخدمة!\nلا يمكن تقديم طلب جديد.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+            return;
+        }
+        
+        let imageUrl = null;
+        let imageName = null;
+        if (currentImageFile) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الصورة...';
+            const uploadResult = await uploadImage(currentImageFile, requestId);
+            
+            if (!uploadResult) {
+                alert("⚠️ فشل رفع الصورة. حاول مرة أخرى");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+                return;
+            }
+            imageUrl = uploadResult.url;
+            imageName = uploadResult.name;
+        }
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+        
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .insert({
+                request_id: requestId,
+                reg_id: currentStudent.reg_id,
+                student_name: currentStudent.name,
+                dept: currentStudent.dept,
+                college: currentStudent.college,
+                service_id: currentService.id,
+                service_name: currentService.name,
+                form_data: JSON.stringify(currentFormData),
+                image_url: imageUrl,
+                image_name: imageName,
+                status: "pending"
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        const successTitle = document.querySelector('.success-msg h2');
+        const successText = document.querySelector('.success-msg p');
+        
+        if (currentService.id === 'S009') {
+            successTitle.textContent = '✅ تم الحجز';
+            successText.innerHTML = '📌 راجع قسم التسجيل<br>لإكمال الإجراءات الورقية';
+        } else if (isEmailService(currentService.name)) {
+            successTitle.textContent = '✅ تم إرسال طلب البريد الجامعي';
+            successText.innerHTML = '📧 راجع "طلباتي" بعد التسليم<br>سيظهر البريد وكلمة المرور هنا';
+        } else {
+            successTitle.textContent = 'تم إرسال طلبك';
+            successText.innerHTML = '⏳ الطلب قيد المراجعة<br>سيتم إشعارك عند الجاهزية';
+        }
+        
+        openPage('page-success');
+        document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
+        
+        currentImageFile = null;
+        
+    } catch (err) {
+        console.error("خطأ:", err);
+        alert("❌ خطأ في الإرسال: " + (err.message || err));
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// إرسال طلب الزائر
+// ═══════════════════════════════════════════════════════
+async function submitVisitorRequest() {
+    const btn = document.querySelector('#page-form .submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+    }
+    
+    try {
+        const phone = currentFormData['رقم الهاتف'];
+        
+        if (phone) {
+            const dup = await checkDuplicateByPhone(phone, currentService.id);
+            if (dup) {
+                const statusMap = {
+                    'pending': '⏳ قيد المراجعة',
+                    'approved': '✅ موافق عليه',
+                    'ready': '📦 جاهز للاستلام'
+                };
+                const st = statusMap[dup.status] || dup.status;
+                alert(`⚠️ لديك طلب سابق بنفس رقم الهاتف!\n\n` +
+                      `رقم الطلب: ${dup.request_id}\n` +
+                      `الحالة: ${st}\n\n` +
+                      `لا يمكن تقديم طلب جديد قبل إكمال الطلب الحالي.`);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+                }
+                return;
+            }
+        }
+        
+        const requestId = "REQ-" + Date.now().toString().slice(-8);
+        const visitorName = currentFormData['الاسم الرباعي'] || 'زائر';
+        
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .insert({
+                request_id: requestId,
+                reg_id: null,
+                student_name: visitorName,
+                dept: null,
+                college: null,
+                service_id: currentService.id,
+                service_name: currentService.name,
+                form_data: JSON.stringify(currentFormData),
+                image_url: null,
+                image_name: null,
+                status: "pending"
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        const successTitle = document.querySelector('.success-msg h2');
+        const successText = document.querySelector('.success-msg p');
+        successTitle.textContent = '✅ تم إرسال طلبك';
+        successText.innerHTML = '📞 سيتم التواصل معك على الرقم<br>' +
+            '<strong style="color:#10b981; font-size:1.1rem;">' +
+            (currentFormData['رقم الهاتف'] || '') + '</strong>' +
+            '<br>بعد مراجعة مكتب رئيس الجامعة';
+        
+        openPage('page-success');
+        document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
+        
+        currentFormData = {};
+        
+    } catch (err) {
+        console.error("خطأ:", err);
+        alert("❌ خطأ في الإرسال: " + (err.message || err));
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// التشغيل
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+    createParticles();
+    loadTheme();
+    loadServices();
+    updateProfileButton();  // ✅ تفعيل حالة زر البروفايل
+});
+</script>
+
+<!-- ✅ Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('✅ PWA Ready'))
+        .catch(err => console.error('SW:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
